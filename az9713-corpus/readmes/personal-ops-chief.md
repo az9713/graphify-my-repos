@@ -1,0 +1,82 @@
+# Personal Ops Chief
+
+Personal Ops Chief is a cost-optimized operations agent for `travel + meetings` coordination. The current implementation is text-first, approval-gated, and inexpensive to run locally, but it already includes real Google Calendar, Gmail, Google Maps, OpenWeather, OpenAI planning, and optional Toolhouse-based replanning when configured.
+
+## What It Does
+
+- Plans travel and meeting itineraries from natural-language requests
+- Reads real Google Calendar events when Google OAuth is configured
+- Reads real Gmail summaries for logistics context
+- Uses real Google Maps Directions and OpenWeather when configured
+- Generates structured plans with OpenAI
+- Supports Toolhouse-based replanning with selective tool usage
+- Keeps outbound side effects approval-gated
+- Falls back to local mock providers when credentials are missing
+
+## Main Features
+
+- Text-first browser UI with optional browser-native voice input
+- Approval-first workflow for all outbound actions
+- Replan flow for changing weather or constraints on an existing request
+- Real provider integration paths plus low-friction mock fallbacks
+- Extensive documentation for users, developers, architects, operators, and contributors
+
+## Architecture At A Glance
+
+- Node.js HTTP server with a static browser client
+- Real and mock provider connectors behind normalized interfaces
+- Heuristic planner, OpenAI planner, and optional Toolhouse replanning runtime
+- In-memory request store for local development
+- Local Google OAuth token storage for testing
+
+## Documentation
+
+The full documentation set lives in [docs/README.md](docs/README.md).
+
+- Users: [docs/user-guide.md](docs/user-guide.md)
+- Developers: [docs/developer-guide.md](docs/developer-guide.md)
+- Architects: [docs/architecture.md](docs/architecture.md)
+- API reference: [docs/api-reference.md](docs/api-reference.md)
+- Toolhouse replanning: [docs/toolhouse-replanning.md](docs/toolhouse-replanning.md)
+- Operations: [docs/operations.md](docs/operations.md)
+
+## Project Links
+
+- GitHub repo: https://github.com/az9713/personal-ops-chief
+- Docs index: [docs/README.md](docs/README.md)
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+## Quick Start
+
+```bash
+npm start
+```
+
+Open `http://localhost:3000`.
+
+## Environment Setup
+
+Copy `.env.example` to `.env` and fill in the providers you want to use.
+
+Common local setup:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback`
+- `OPENAI_API_KEY`
+- optional `TOOLHOUSE_API_KEY`
+- optional `MAPS_API_KEY`
+- optional `WEATHER_API_KEY`
+
+## Test
+
+```bash
+npm test
+```
+
+## Current Status
+
+This repo is usable for local personal-agent experimentation, but it is not production-ready yet. Outbound email, SMS, and calendar writes are still mocked, and request state is not durable across restarts.

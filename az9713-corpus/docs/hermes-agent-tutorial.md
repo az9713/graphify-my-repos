@@ -1,0 +1,264 @@
+---
+repo: hermes-agent-tutorial
+description: Clone of NousResearch/hermes-agent enhanced with comprehensive tutorial documentation
+language: Python
+stars: 1
+forks: 0
+created: 2026-04-11
+updated: 2026-04-20
+topics: 
+is_fork: False
+kb: 33406
+---
+
+# hermes-agent-tutorial
+<p align="center">
+  <img src="assets/banner.png" alt="Hermes Agent" width="100%">
+</p>
+
+> **Tutorial fork** — This is a clone of [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent), enhanced with:
+> - A comprehensive set of tutorial and reference documents in [`docs/`](docs/index.md)
+> - An original deep-dive analysis of Hermes Agent's self-improvement architecture ([`docs/analysis/`](docs/analysis/self-improvement-deep-dive.md))
+> - Working implementations of 7 self-improvement enhancements from that analysis — including `hermes skills rollback`, `hermes skills history`, patch audit trails, memory expiry edge-case fixes, and 179 automated tests ([`docs/analysis/implementation-status.md`](docs/analysis/implementation-status.md))
+> - A production-style autoresearch hardening pass: measurement-fidelity upgrades across Stage 1/2/3, memory contradiction hardening with two-phase apply, and operator confidence reporting with expanded test coverage ([`docs/implementation/autoresearch-measurement-fidelity-upgrade.md`](docs/implementation/autoresearch-measurement-fidelity-upgrade.md), [`docs/analysis/autoresearch-measurement-fidelity-test-report.md`](docs/analysis/autoresearch-measurement-fidelity-test-report.md))
+>
+> The original project, all code, and all credit belong to [Nous Research](https://nousresearch.com). See the upstream repo for the latest features and releases.
+
+# Hermes Agent ☤
+
+<p align="center">
+  <a href="https://hermes-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
+  <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://github.com/NousResearch/hermes-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
+</p>
+
+**The self-improving AI agent built by [Nous Research](https://nousresearch.com).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.
+
+Use any model you want — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (200+ models), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), OpenAI, or your own endpoint. Switch with `hermes model` — no code changes, no lock-in.
+
+<table>
+<tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>
+<tr><td><b>Lives where you do</b></td><td>Telegram, Discord, Slack, WhatsApp, Signal, and CLI — all from a single gateway process. Voice memo transcription, cross-platform conversation continuity.</td></tr>
+<tr><td><b>A closed learning loop</b></td><td>Agent-curated memory with periodic nudges. Autonomous skill creation after complex tasks. Skills self-improve during use. FTS5 session search with LLM summarization for cross-session recall. <a href="https://github.com/plastic-labs/honcho">Honcho</a> dialectic user modeling. Compatible with the <a href="https://agentskills.io">agentskills.io</a> open standard.</td></tr>
+<tr><td><b>Scheduled automations</b></td><td>Built-in cron scheduler with delivery to any platform. Daily reports, nightly backups, weekly audits — all in natural language, running unattended.</td></tr>
+<tr><td><b>Delegates and parallelizes</b></td><td>Spawn isolated subagents for parallel workstreams. Write Python scripts that call tools via RPC, collapsing multi-step pipelines into zero-context-cost turns.</td></tr>
+<tr><td><b>Runs anywhere, not just your laptop</b></td><td>Six terminal backends — local, Docker, SSH, Daytona, Singularity, and Modal. Daytona and Modal offer serverless persistence — your agent's environment hibernates when idle and wakes on demand, costing nearly nothing between sessions. Run it on a $5 VPS or a GPU cluster.</td></tr>
+<tr><td><b>Research-ready</b></td><td>Batch trajectory generation, Atropos RL environments, trajectory compression for training the next generation of tool-calling models.</td></tr>
+</table>
+
+---
+
+## Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+```
+
+Works on Linux, macOS, WSL2, and Android via Termux. The installer handles the platform-specific setup for you.
+
+> **Android / Termux:** The tested manual path is documented in the [Termux guide](https://hermes-agent.nousresearch.com/docs/getting-started/termux). On Termux, Hermes installs a curated `.[termux]` extra because the full `.[all]` extra currently pulls Android-incompatible voice dependencies.
+>
+> **Windows:** Native Windows is not supported. Please install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and run the command above.
+
+After installation:
+
+```bash
+source ~/.bashrc    # reload shell (or: source ~/.zshrc)
+hermes              # start chatting!
+```
+
+---
+
+## Getting Started
+
+```bash
+hermes              # Interactive CLI — start a conversation
+hermes model        # Choose your LLM provider and model
+hermes tools        # Configure which tools are enabled
+hermes config set   # Set individual config values
+hermes gateway      # Start the messaging gateway (Telegram, Discord, etc.)
+hermes setup        # Run the full setup wizard (configures everything at once)
+hermes claw migrate # Migrate from OpenClaw (if coming from OpenClaw)
+hermes update       # Update to the latest version
+hermes doctor       # Diagnose any issues
+```
+
+📖 **[Full documentation →](https://hermes-agent.nousresearch.com/docs/)**
+
+## CLI vs Messaging Quick Reference
+
+Hermes has two entry points: start the terminal UI with `hermes`, or run the gateway and talk to it from Telegram, Discord, Slack, WhatsApp, Signal, or Email. Once you're in a conversation, many slash commands are shared across both interfaces.
+
+| Action | CLI | Messaging platforms |
+|---------|-----|---------------------|
+| Start chatting | `hermes` | Run `hermes gateway setup` + `hermes gateway start`, then send the bot a message |
+| Start fresh conversation | `/new` or `/reset` | `/new` or `/reset` |
+| Change model | `/model [provider:model]` | `/model [provider:model]` |
+| Set a personality | `/personality [name]` | `/personality [name]` |
+| Retry or undo the last turn | `/retry`, `/undo` | `/retry`, `/undo` |
+| Compress context / check usage | `/compress`, `/usage`, `/insights [--days N]` | `/compress`, `/usage`, `/insights [days]` |
+| Browse skills | `/skills` or `/<skill-name>` | `/skills` or `/<skill-name>` |
+| Interrupt current work | `Ctrl+C` or send a new message | `/stop` or send a new message |
+| Platform-specific status | `/platforms` | `/status`, `/sethome` |
+
+For the full command lists, see the [CLI guide](https://hermes-agent.nousresearch.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://hermes-agent.nousresearch.com/docs/user-guide/messaging).
+
+---
+
+## What's in This Fork
+
+This repository adds two things on top of the original Hermes Agent codebase:
+
+### 1. Comprehensive Documentation (`docs/`)
+
+A full documentation set written from scratch — concepts, guides, references, and architecture decision records. Start at [`docs/index.md`](docs/index.md) for the navigation hub.
+
+| Section | File | What's Covered |
+|---------|------|---------------|
+| **Overview** | [`docs/overview/what-is-this.md`](docs/overview/what-is-this.md) | What Hermes is, mental model, architecture overview |
+| | [`docs/overview/key-concepts.md`](docs/overview/key-concepts.md) | Glossary of every important term (40+ entries) |
+| **Getting Started** | [`docs/getting-started/prerequisites.md`](docs/getting-started/prerequisites.md) | Exact dependencies with verify commands |
+| | [`docs/getting-started/quickstart.md`](docs/getting-started/quickstart.md) | Install → first conversation in under 15 minutes |
+| | [`docs/getting-started/onboarding.md`](docs/getting-started/onboarding.md) | Zero-to-hero walkthrough for newcomers |
+| **Concepts** | [`docs/concepts/agent-loop.md`](docs/concepts/agent-loop.md) | The conversation loop, tool dispatch, context management |
+| | [`docs/concepts/tool-system.md`](docs/concepts/tool-system.md) | All 20 tools, toolsets, self-registration pattern |
+| | [`docs/concepts/skill-system.md`](docs/concepts/skill-system.md) | Skills as procedural memory, skill lifecycle, slash commands |
+| | [`docs/concepts/gateway.md`](docs/concepts/gateway.md) | 17-platform messaging gateway architecture |
+| | [`docs/concepts/memory-and-learning.md`](docs/concepts/memory-and-learning.md) | Memory layers, Honcho, session search, the learning loop |
+| | [`docs/concepts/terminal-execution.md`](docs/concepts/terminal-execution.md) | All 6 terminal backends (local, Docker, SSH, Modal, …) |
+| | [`docs/concepts/session-persistence.md`](docs/concepts/session-persistence.md) | SQLite+FTS5 storage, trajectory logs, RL training |
+| **Guides** | [`docs/guides/add-a-tool.md`](docs/guides/add-a-tool.md) | Build and register a new tool end-to-end |
+| | [`docs/guides/add-a-skill.md`](docs/guides/add-a-skill.md) | Write, test, and contribute a skill |
+| | [`docs/guides/add-a-platform.md`](docs/guides/add-a-platform.md) | Implement a new messaging platform adapter |
+| | [`docs/guides/configure-memory.md`](docs/guides/configure-memory.md) | Default setup, Honcho, Mem0, tuning nudges |
+| | [`docs/guides/deploy-with-docker.md`](docs/guides/deploy-with-docker.md) | Docker and Docker Compose deployment |
+| | [`docs/guides/use-cron-scheduling.md`](docs/guides/use-cron-scheduling.md) | Create, list, and manage cron automations |
+| **Reference** | [`docs/reference/configuration.md`](docs/reference/configuration.md) | Every `config.yaml` field with types and defaults |
+| | [`docs/reference/env-vars.md`](docs/reference/env-vars.md) | All 60+ environment variables by subsystem |
+| | [`docs/reference/cli-commands.md`](docs/reference/cli-commands.md) | All `hermes` commands, slash commands, keyboard shortcuts |
+| | [`docs/reference/tools.md`](docs/reference/tools.md) | Complete tool parameter reference |
+| **Architecture** | [`docs/architecture/system-design.md`](docs/architecture/system-design.md) | Full system diagram, component breakdown, data flows |
+| | [`docs/architecture/adr/001-tool-self-registration.md`](docs/architecture/adr/001-tool-self-registration.md) | ADR: why tools self-register at import time |
+| | [`docs/architecture/adr/002-openai-compatible-api.md`](docs/architecture/adr/002-openai-compatible-api.md) | ADR: why OpenAI SDK as universal provider layer |
+| | [`docs/architecture/adr/003-sqlite-fts-session-storage.md`](docs/architecture/adr/003-sqlite-fts-session-storage.md) | ADR: why SQLite+FTS5 over JSON files or Postgres |
+| | [`docs/architecture/adr/004-ephemeral-system-prompts.md`](docs/architecture/adr/004-ephemeral-system-prompts.md) | ADR: why system prompts are rebuilt every turn |
+| **Troubleshooting** | [`docs/troubleshooting/common-issues.md`](docs/troubleshooting/common-issues.md) | Top issues with exact fixes |
+
+### 2. Self-Improvement Deep-Dive Analysis (`docs/analysis/`)
+
+The README claims Hermes is "the only agent with a built-in learning loop." This fork includes an original code-level analysis of every self-improvement claim — what the implementing code actually does, where it falls short, and how to take it further.
+
+**[→ Read the full analysis: `docs/analysis/self-improvement-deep-dive.md`](docs/analysis/self-improvement-deep-dive.md)**
+
+| Claim | What the Code Actually Does | Key Gap |
+|-------|-----------------------------|---------|
+| Creates skills from experience | LLM calls `skill_manage` tool when `SKILLS_GUIDANCE` prompt triggers | No success signal — skills are created from complex tasks, not successful ones |
+| Improves skills during use | LLM calls `skill_manage(action="patch")` mid-conversation | ✅ Patch history now recorded in `SKILL_HISTORY.md`; `hermes skills rollback` and `hermes skills history` implemented |
+| Nudges itself | `MEMORY_GUIDANCE` string injected in every system prompt | A prompt is not a nudge — it's a constant instruction with no scheduling |
+| Searches past conversations | FTS5 keyword search + Gemini Flash summarization | Reactive only; no proactive injection; keyword search misses semantic matches |
+| Builds a deepening user model | Freeform `USER.md` (1375 char limit); Honcho is opt-in | A text file is not a model; the real modeling (Honcho) is disabled by default |
+
+The analysis includes concrete improvement suggestions for each claim — from patch versioning and rollback, to background consolidation jobs, to semantic search and structured user model schemas.
+
+**Implemented enhancements** — 7 improvements have been implemented on top of the analysis, with 179 tests. Status and test evidence in [`docs/analysis/implementation-status.md`](docs/analysis/implementation-status.md).
+
+| Analysis Document | What it covers |
+|-------------------|---------------|
+| [`docs/analysis/self-improvement-deep-dive.md`](docs/analysis/self-improvement-deep-dive.md) | Original claim-by-claim analysis with improvement roadmap |
+| [`docs/analysis/implementation-status.md`](docs/analysis/implementation-status.md) | What was built, 179-test coverage map, next steps |
+| [`docs/analysis/rollback-cli-tests.md`](docs/analysis/rollback-cli-tests.md) | `hermes skills rollback` — 26 tests, strategy, evidence, limits |
+| [`docs/analysis/history-command.md`](docs/analysis/history-command.md) | `hermes skills history` — full feature reference, implementation walkthrough, 23 tests with interpretation guide |
+| [`docs/analysis/history-cli-tests.md`](docs/analysis/history-cli-tests.md) | `hermes skills history` — test strategy and per-test interpretation |
+| [`docs/analysis/expiry-edge-case-tests.md`](docs/analysis/expiry-edge-case-tests.md) | Memory expiry edge cases — 5 tests, `_today()` monkeypatch strategy, evidence |
+| [`docs/analysis/implementation-discussion.md`](docs/analysis/implementation-discussion.md) | Design decisions and trade-offs |
+
+### 3. Autoresearch Hardening (Stage 1/2/3 + Memory)
+
+This fork now includes a hardened autoresearch path aimed at production safety and measurement validity:
+
+- richer Stage 1 signal labeling and attribution,
+- Stage 2 composite evaluation (self-play + holdout + rubric + optional dual-judge),
+- deterministic multi-class anomaly detection (`UNDERPERFORMING`, `STRUCTURALLY_BROKEN`, `MISSING_COVERAGE`),
+- memory contradiction hardening with weighted evidence + ambiguity suppression,
+- two-phase memory apply lifecycle with conservative `needs_review` routing,
+- operator confidence KPIs surfaced in digest and CLI status.
+
+Primary references:
+
+- [`docs/implementation/autoresearch-measurement-fidelity-upgrade.md`](docs/implementation/autoresearch-measurement-fidelity-upgrade.md)
+- [`docs/implementation/autoresearch-memory-v1.md`](docs/implementation/autoresearch-memory-v1.md)
+- [`docs/analysis/autoresearch-measurement-fidelity-test-report.md`](docs/analysis/autoresearch-measurement-fidelity-test-report.md)
+- [`docs/our-work-index.md`](docs/our-work-index.md)
+
+Implementation note: the autoresearch hardening implementation and documentation in this fork were produced with assistance from Codex powered by GPT-5.3-Codex, with human review.
+
+---
+
+## Documentation
+
+All upstream documentation lives at **[hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs/)**:
+
+| Section | What's Covered |
+|---------|---------------|
+| [Quickstart](https://hermes-agent.nousresearch.com/docs/getting-started/quickstart) | Install → setup → first conversation in 2 minutes |
+| [CLI Usage](https://hermes-agent.nousresearch.com/docs/user-guide/cli) | Commands, keybindings, personalities, sessions |
+| [Configuration](https://hermes-agent.nousresearch.com/docs/user-guide/configuration) | Config file, providers, models, all options |
+| [Messaging Gateway](https://hermes-agent.nousresearch.com/docs/user-guide/messaging) | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
+| [Security](https://hermes-agent.nousresearch.com/docs/user-guide/security) | Command approval, DM pairing, container isolation |
+| [Tools & Toolsets](https://hermes-agent.nousresearch.com/docs/user-guide/features/tools) | 40+ tools, toolset system, terminal backends |
+| [Skills System](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills) | Procedural memory, Skills Hub, creating skills |
+| [Memory](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) | Persistent memory, user profiles, best practices |
+| [MCP Integration](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp) | Connect any MCP server for extended capabilities |
+| [Cron Scheduling](https://hermes-agent.nousresearch.com/docs/user-guide/features/cron) | Scheduled tasks with platform delivery |
+| [Context Files](https://hermes-agent.nousresearch.com/docs/user-guide/features/context-files) | Project context that shapes every conversation |
+| [Architecture](https://hermes-agent.nousresearch.com/docs/developer-guide/architecture) | Project structure, agent loop, key classes |
+| [Contributing](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing) | Development setup, PR process, code style |
+| [CLI Reference](https://hermes-agent.nousresearch.com/docs/reference/cli-commands) | All commands and flags |
+| [Environment Variables](https://hermes-agent.nousresearch.com/docs/reference/environment-variables) | Complete env var reference |
+
+---
+
+## Migrating from OpenClaw
+
+If you're coming from OpenClaw, Hermes can automatically import your settings, memories, skills, and API keys.
+
+**During first-time setup:** The setup wizard (`hermes setup`) automatically detects `~/.openclaw` and offers to migrate before configuration begins.
+
+**Anytime after install:**
+
+```bash
+hermes claw migrate              # Interactive migration (full preset)
+hermes claw migrate --dry-run    # Preview what would be migrated
+hermes claw migrate --preset user-data   # Migrate without secrets
+hermes claw migrate --overwrite  # Overwrite existing conflicts
+```
+
+What gets imported:
+- **SOUL.md** — persona file
+- **Memories** — MEMORY.md and USER.md entries
+- **Skills** — user-created skills → `~/.hermes/skills/openclaw-imports/`
+- **Command allowlist** — approval patterns
+- **Messaging settings** — platform configs, allowed users, working directory
+- **API keys** — allowlisted secrets (Telegram, OpenRouter, OpenAI, Anthropic, ElevenLabs)
+- **TTS assets** — workspace audio files
+- **Workspace instructions** — AGENTS.md (with `--workspace-target`)
+
+See `hermes claw migrate --help` for all options, or use the `openclaw-migration` skill for an interactive agent-guided migration with dry-run previews.
+
+---
+
+## Contributing
+
+We welcome contributions! See the [Contributing Guide](https://hermes-agent.nousresearch.com/docs/developer-guide/contributing) for development setup, code style, and PR process.
+
+Quick start for contributors:
+
+```bash
+git clone https://github.com/NousResearch/hermes-agent.git
+cd hermes-agent
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv venv --python 3.11
+source venv/bin/activate
+uv pip install -e ".[all,dev]"
+python -m p

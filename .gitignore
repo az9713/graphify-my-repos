@@ -1,0 +1,10 @@
+.ignore/
+__pycache__/
+*.pyc
+
+# local bookkeeping from the extraction run: absolute machine paths, no value to a reader
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/.graphify_labels.json
+graphify-out/manifest.json
+graphify-out/cache/

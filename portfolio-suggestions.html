@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>az9713 — 448 Repos, 16 Ambitious Next Moves</title>
+<style>
+  :root{
+    --bg:#0d0e11; --bg2:#141619; --line:#26292f; --fg:#e9e7e2; --dim:#9a9690;
+    --amber:#e0a458; --teal:#5fb3a8; --rose:#d17b7b; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#faf9f7; --bg2:#ffffff; --line:#e2ddd5; --fg:#1a1917; --dim:#6b665e;
+           --amber:#a86e1f; --teal:#2f7d72; --rose:#a44f4f; }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:0 24px}
+
+  /* ---- masthead ---- */
+  header{border-bottom:1px solid var(--line);padding:72px 0 40px;margin-bottom:8px}
+  .kicker{font:500 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:20px}
+  h1{font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-.025em;margin:0 0 20px;font-weight:650}
+  h1 em{font-style:normal;color:var(--dim)}
+  .lede{font-size:19px;color:var(--dim);max-width:60ch;margin:0}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);
+         border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:36px}
+  .stat{background:var(--bg2);padding:16px 18px}
+  .stat b{display:block;font:600 26px/1.1 var(--mono);letter-spacing:-.02em}
+  .stat span{font-size:12px;color:var(--dim)}
+
+  /* ---- structure ---- */
+  section{padding:52px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:13px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--amber);
+     margin:0 0 8px;font-weight:600}
+  h2.teal{color:var(--teal)}
+  .sectitle{font-size:clamp(24px,4vw,32px);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px;font-weight:620}
+  .secnote{color:var(--dim);max-width:62ch;margin:0 0 8px}
+
+  p{margin:0 0 16px}
+  a{color:var(--amber);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--amber) 35%,transparent)}
+  a:hover{border-bottom-color:var(--amber)}
+  strong{font-weight:640}
+  code{font:13px/1 var(--mono);background:var(--bg2);border:1px solid var(--line);
+       padding:2px 5px;border-radius:4px;white-space:nowrap}
+
+  /* ---- callout ---- */
+  .callout{border-left:2px solid var(--rose);background:var(--bg2);padding:18px 22px;border-radius:0 8px 8px 0;margin:26px 0}
+  .callout p:last-child{margin:0}
+  .callout .lbl{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--rose);display:block;margin-bottom:10px}
+
+  /* ---- filter bar ---- */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 4px}
+  .filters button{
+    font:500 12px/1 var(--mono);letter-spacing:.04em;color:var(--dim);background:transparent;
+    border:1px solid var(--line);border-radius:99px;padding:8px 14px;cursor:pointer;transition:.15s}
+  .filters button:hover{color:var(--fg);border-color:var(--dim)}
+  .filters button[aria-pressed="true"]{color:var(--bg);background:var(--fg);border-color:var(--fg)}
+  @media (prefers-color-scheme: light){ .filters button[aria-pressed="true"]{color:#fff} }
+
+  /* ---- idea card ---- */
+  .idea{border:1px solid var(--line);border-radius:10px;background:var(--bg2);padding:26px 28px;margin:20px 0}
+  .idea.hide{display:none}
+  .idea > h3{margin:0 0 6px;font-size:21px;line-height:1.25;letter-spacing:-.015em;font-weight:640}
+  .id{font:600 12px/1 var(--mono);color:var(--amber);letter-spacing:.06em;display:inline-block;margin-bottom:12px}
+  .idea.new .id{color:var(--teal)}
+  .idea .sub{color:var(--dim);font-size:15px;margin:-2px 0 16px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 18px}
+  .chip{font:11px/1 var(--mono);color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:5px 7px}
+  .chip.none{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 35%,transparent)}
+
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:20px;
+        padding-top:18px;border-top:1px solid var(--line)}
+  .meta div{font-size:14px}
+  .meta .k{font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
+  .cost-low{color:var(--teal);font-weight:600}
+  .cost-med{color:var(--amber);font-weight:600}
+  .cost-high{color:var(--rose);font-weight:600}
+
+  .hard{border-left:2px solid var(--line);padding-left:16px;margin:18px 0;font-size:15px;color:var(--dim)}
+  .hard b{color:var(--fg)}
+
+  /* ---- plan ---- */
+  ol.plan{list-style:none;counter-reset:p;padding:0;margin:24px 0 0}
+  ol.plan li{counter-increment:p;position:relative;padding:0 0 22px 46px;border-left:1px solid var(--line);margin-left:14px}
+  ol.plan li:last-child{border-left-color:transparent;padding-bottom:0}
+  ol.plan li::before{content:counter(p);position:absolute;left:-14px;top:-2px;width:28px;height:28px;border-radius:99px;
+    background:var(--bg);border:1px solid var(--line);color:var(--amber);
+    font:600 12px/26px var(--mono);text-align:center}
+  ol.plan b{display:block;font-size:16px;margin-bottom:4px}
+
+  footer{padding:44px 0 80px;color:var(--dim);font-size:13px;font-family:var(--mono)}
+  ul.tight{margin:0 0 16px;padding-left:20px}
+  ul.tight li{margin-bottom:7px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Portfolio scan · github.com/az9713 · 4 Aug 2026</div>
+    <h1>448 repositories.<br><em>Sixteen ways to spend the next one.</em></h1>
+    <p class="lede">A read of what the portfolio actually is, where its unclaimed value sits, and the projects — extensions and entirely new domains — that would move it furthest.</p>
+    <div class="stats">
+      <div class="stat"><b>448</b><span>public repos</span></div>
+      <div class="stat"><b>~180</b><span>tutorial forks</span></div>
+      <div class="stat"><b>13</b><span>trading repos</span></div>
+      <div class="stat"><b>~90%</b><span>at zero stars</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>The honest read</h2>
+    <p class="sectitle">Five clusters, one distribution problem</p>
+    <p>Sorted roughly by size, the portfolio is: <strong>Claude Code harness engineering</strong> — skills, hooks, agent fleets, memory systems, and the through-line of everything you build; <strong>tutorial forks of other people's repos</strong>, around 180 of them; <strong>interactive HTML explainers</strong> covering physics, mathematics, and interpretability; <strong>AI media pipelines</strong> for video, image and audio; and <strong>trading bots</strong>, thirteen separate ones.</p>
+
+    <p>The technical range is genuinely wide. There is validated computational fluid dynamics running in a browser, a superoptimizer that proves shortest-program floors by exhaustive search, a limit-order-book simulator that models queue position, an adversarially-verified compendium of Putnam proofs, and a WebGPU ray-traced puzzle game. That is not a hobbyist's shelf.</p>
+
+    <div class="callout">
+      <span class="lbl">The thing worth naming first</span>
+      <p>Your stars land on the wrong repos. The 56★, 34★, 16★, 14★ and 12★ entries are almost all clones or ports of work that was <em>already</em> popular before you touched it. Meanwhile <code>superoptimizer-foundry</code>, <code>lbm-wind-tunnel</code>, <code>market-microstructure-observatory</code> and <code>proof-foundry</code> — all original, all harder — sit at zero.</p>
+      <p>That is a distribution problem, not a quality problem. It is fixable in an afternoon, and it is why the first suggestion below is the cheapest one on the list.</p>
+    </div>
+
+    <p>The second structural observation: the portfolio has almost no contact with anything <em>outside a computer</em>. Across 448 repos there is not one sensor, motor, satellite image, protein, or physical measurement. Everything is simulated, documented, or generated. That is the single largest unexplored surface, and Track B leans into it hard.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Track A · extend &amp; fix</h2>
+    <p class="sectitle">Seven moves on work you already own</p>
+    <p class="secnote">Each one takes something already built and pushes it up a rung — from persuasive to verified, from scattered to unified, from invisible to findable.</p>
+
+    <div class="filters" id="filters">
+      <button data-f="all" aria-pressed="true">All 16</button>
+      <button data-f="a" aria-pressed="false">Track A · extend</button>
+      <button data-f="b" aria-pressed="false">Track B · new domains</button>
+      <button data-f="low" aria-pressed="false">Fits this week</button>
+    </div>
+  </div>
+</section>
+
+<section id="track-a" style="border-bottom:none;padding-top:12px">
+  <div class="wrap">
+
+    <article class="idea ext low">
+      <span class="id">A1</span>
+      <h3>Point graphify at your own 448 repos</h3>
+      <p class="sub">You built the tool for exactly this and never ran it on yourself.</p>
+      <div class="chips"><span class="chip">graphify</span><span class="chip">graphify-on-graphify</span><span class="chip">okf-fable5-showcase</span><span class="chip">knowledge-graph-cli</span></div>
+
+      <p>You have a tool that turns any corpus into a knowledge graph with community detection. You proved it works on its own source code, and on a news corpus where it found 383 nodes and grouped them without being told the categories. You have never run it on the collection that most needs it.</p>
+
+      <p>Feed it all 448 READMEs. The output is a single browsable atlas hosted on GitHub Pages, where the clusters are <em>discovered</em> rather than declared — which will almost certainly cut across your own mental categories in useful ways. Two by-products matter as much as the atlas: a ranked list of the twenty repos that deserve an audience and don't have one, and a cross-link map so that related repos stop being 448 orphans and start pointing at each other.</p>
+
+      <div class="hard"><b>The hard part:</b> nothing technical. The discipline is resisting the urge to hand-curate the clusters when the algorithm produces something you didn't expect — the unexpected grouping is the finding.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-low">Low</span> — scripted, one pass over the GitHub API</div>
+        <div><span class="k">First move</span>Dump all READMEs to a folder, run graphify, look at the communities before deciding anything</div>
+        <div><span class="k">Why it ranks first</span>It raises the value of every other repo you own, including the fifteen ideas below</div>
+      </div>
+    </article>
+
+    <article class="idea ext">
+      <span class="id">A2</span>
+      <h3>Collapse thirteen trading repos into one honest research platform</h3>
+      <p class="sub">The best backtester you've written is sitting under nothing.</p>
+      <div class="chips"><span class="chip">market-microstructure-observatory</span><span class="chip">regimebot</span><span class="chip">hmm-regime-trader</span><span class="chip">HMM-regime-terminal</span><span class="chip">self-improving-trading-agent</span><span class="chip">TradingAgents</span><span class="chip">long-short-equity-fund</span><span class="chip">technical-analysis-framework</span><span class="chip">bollinger-noir</span><span class="chip">ta-terminal</span><span class="chip">yet-another-stock-terminal</span><span class="chip">autoresearch-stock-trading</span><span class="chip">turboquant-tutorial</span></div>
+
+      <p>Thirteen repos, thirteen partial answers. The crown jewel is <code>market-microstructure-observatory</code>: it models latency, fees, and — unusually — <em>queue position</em>, meaning it tracks where your order actually sits in line at a given price rather than pretending you get filled instantly. Almost no hobby backtester does this, and it is frequently the entire difference between a strategy that looks profitable and one that is.</p>
+
+      <p>Right now that engine runs nothing. The ambitious consolidation: make it the execution layer beneath <em>every</em> strategy in the portfolio, demote the HMM regime classifier from "the system" to one risk gate among several, and let the autoresearch loop from <code>autoresearch-stock-trading</code> propose candidates that must survive a pre-registered statistical gauntlet before anyone celebrates.</p>
+
+      <p>That gauntlet is the intellectual core, and it's three tests. The <strong>Deflated Sharpe Ratio</strong> asks: given that I tried N strategies, how good would the best one look <em>by luck alone</em>? <strong>White's Reality Check</strong> answers the same question by bootstrapping the whole search rather than assuming a distribution. The <strong>Harvey–Liu haircut</strong> then shaves the reported performance down to what survives that correction. In plain terms: test five hundred ideas and some will look brilliant purely by chance — these methods estimate how brilliant chance alone gets, so you can subtract it.</p>
+
+      <div class="hard"><b>The hard part:</b> being willing to publish the result you get. <em>"We generated 500 strategies and none survived multiple-testing correction"</em> is a more valuable repository than another green equity curve, and it is the one nobody ships.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-high">High</span> — long agent loops, heavy data plumbing</div>
+        <div><span class="k">First move</span>Lift the microstructure fill engine into a standalone package with a clean strategy interface</div>
+        <div><span class="k">Payoff</span>Twelve dead repos become one that a quant would actually read</div>
+      </div>
+    </article>
+
+    <article class="idea ext">
+      <span class="id">A3</span>
+      <h3>Make proof-foundry machine-checked</h3>
+      <p class="sub">Right now the referee is a language model. Make it a compiler.</p>
+      <div class="chips"><span class="chip">proof-foundry</span><span class="chip">no-proof-left-behind</span><span class="chip">multi-agent-paper-audit</span><span class="chip">ten-math-cs-advances</span></div>
+
+      <p>Today <code>proof-foundry</code> holds eight Putnam proofs plus eight Erdős surveys, written by a 110-agent fleet and checked adversarially by other agents. It is persuasive. It is not <em>certain</em>, because every participant in the loop is the same kind of system making the same kinds of mistakes.</p>
+
+      <p>Port the proofs to <strong>Lean 4 with Mathlib</strong>, where a successful <code>lake build</code> <em>is</em> the proof — a kernel a few thousand lines long checks every inference, and no amount of eloquence gets past it. Then build the genuinely novel part: an autoformalization loop where an agent reads the informal proof, drafts Lean, and iterates against the compiler's error messages until it type-checks or the agent gives up.</p>
+
+      <p>Publish the pass rate honestly. It will be low — current research puts competition-level autoformalization well short of solved — and the shape of the failures is the interesting artifact. Which steps do LLMs skip when nobody is checking? That's answerable here, and almost nowhere else.</p>
+
+      <div class="hard"><b>The hard part:</b> Mathlib's naming conventions and the sheer distance between "obviously true" and "accepted by the kernel." Budget for the agent to fail loudly and often.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-high">High</span> — iterative compile loops burn tokens fast</div>
+        <div><span class="k">First move</span>Formalize the single easiest Putnam problem by hand first, to calibrate the gap</div>
+        <div><span class="k">Bonus</span>Enters proof assistants, a domain absent from all 448 repos</div>
+      </div>
+    </article>
+
+    <article class="idea ext">
+      <span class="id">A4</span>
+      <h3>Take superoptimizer-foundry to a real ISA — and find a bug in LLVM</h3>
+      <p class="sub">Brute force on a toy instruction set was the warm-up.</p>
+      <div class="chips"><span class="chip">superoptimizer-foundry</span><span class="chip">cheat_code_compiler</span><span class="chip">polyglot-crap</span></div>
+
+      <p>You proved shortest-program floors by exhaustive enumeration over a pinned 8-bit ISA — a real result, and a defensible one because exhaustion admits no doubt. But it caps out fast: the search space grows exponentially with program length, so brute force dies around four or five instructions.</p>
+
+      <p>Next rung: a real <strong>RV32I</strong> subset (the RISC-V base integer instruction set), with the search driven by an <strong>SMT solver</strong> rather than enumeration. Z3's bitvector theory can answer "does there exist a shorter program equivalent to this one on all 2³² inputs?" directly, without visiting each candidate. This is the lineage of Souper, LLVM's own superoptimizer, and STOKE, which searches stochastically instead.</p>
+
+      <p>The concrete target that makes this ambitious rather than academic: find one peephole rewrite that LLVM's optimizer <em>misses</em>, prove it correct for all inputs, and submit it upstream as an InstCombine patch. A merged compiler patch is checkable by strangers and permanent — a very different artifact from a zero-star HTML page.</p>
+
+      <div class="hard"><b>The hard part:</b> encoding instruction semantics into SMT precisely enough that the solver's "equivalent" means what you think it means. Flags and undefined behavior are where these projects die.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — solver does the work, you do the encoding</div>
+        <div><span class="k">First move</span>Encode ten RV32I instructions in Z3 and reproduce one rewrite LLVM already knows, as a correctness check</div>
+        <div><span class="k">Payoff</span>An upstream patch in a compiler millions of people use</div>
+      </div>
+    </article>
+
+    <article class="idea ext">
+      <span class="id">A5</span>
+      <h3>Merge the two fluid solvers into a validated CFD benchmark suite</h3>
+      <p class="sub">You solved the same problem twice. Now prove the solution converges.</p>
+      <div class="chips"><span class="chip">gpu-fluid-lab</span><span class="chip">lbm-wind-tunnel</span><span class="chip">webgpu-ai-lab</span><span class="chip">meep</span></div>
+
+      <p><code>gpu-fluid-lab</code> is a WebGPU Navier–Stokes solver validated against the Ghia et al. lid-driven cavity benchmark. <code>lbm-wind-tunnel</code> is a lattice-Boltzmann solver validated on drafting and V-formation flight. Two codebases, two validation stories, one underlying physics.</p>
+
+      <p>Unify them behind one solver interface with a real validation harness and four standard benchmarks: the <strong>lid-driven cavity</strong> (Ghia — the field's hello-world), <strong>flow past a cylinder</strong> checked against the Strouhal-versus-Reynolds curve, the <strong>backward-facing step</strong> against Armaly's reattachment-length data, and <strong>Taylor–Green vortex decay</strong>, which has an exact analytic solution so the error is known to the digit.</p>
+
+      <p>Then do the thing that essentially no browser simulation does: a <strong>grid-convergence study</strong>. If your scheme claims second-order accuracy, halving the grid spacing should cut the error by a factor of four. Plot error against spacing on log axes and show the slope is 2. That single graph is the difference between "looks like fluid" and "is trustworthy enough to assign to a class."</p>
+
+      <div class="hard"><b>The hard part:</b> the convergence plot is where solvers get caught lying. Boundary conditions that are only first-order accurate will flatten the slope and force you to fix them — which is exactly the value.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — the physics exists, the harness is the work</div>
+        <div><span class="k">First move</span>Run Taylor–Green on the existing solver at three grid resolutions and plot the slope. Find out what you actually have.</div>
+        <div><span class="k">Audience</span>Teachers and students — the one group that needs validated browser sims and can't find them</div>
+      </div>
+    </article>
+
+    <article class="idea ext">
+      <span class="id">A6</span>
+      <h3>Build the memory benchmark before building a fifth memory system</h3>
+      <p class="sub">Four overlapping implementations, zero evaluations.</p>
+      <div class="chips"><span class="chip">my-cerebras-brain</span><span class="chip">memory-mcp</span><span class="chip">coilmem</span><span class="chip">graphify</span><span class="chip">my-memory-system</span><span class="chip">cerebro</span><span class="chip">claude-code-transcripts</span></div>
+
+      <p>You have four architectures solving the same problem. <code>my-cerebras-brain</code> uses Postgres with hybrid reciprocal-rank-fusion retrieval — keyword and vector search merged by rank rather than score. <code>memory-mcp</code> uses SQLite plus sqlite-vec with three decay tiers, so older memories fade unless reinforced. <code>coilmem</code> splits shared workspace scope from per-agent private scope. <code>graphify</code> retrieves over a graph instead of a flat index. None of them has ever been measured against the others.</p>
+
+      <p>Invert the order of work: <strong>build the benchmark first</strong>, from material you uniquely own. Your 448 repo histories and your archived session transcripts give you a corpus with ground truth — you know what happened, when, and what the right answer to "what did I decide about X" actually is. Generate questions with verified answers, then score retrieval at <strong>one-day, one-month, and six-month lag</strong>. Then run all four backends through the same gauntlet.</p>
+
+      <p>"Which agent-memory retrieval scheme actually survives the passage of time" is badly under-published — most memory benchmarks test recall over a single session. Very few people have years of real, timestamped, personally-verifiable agent history. You do.</p>
+
+      <div class="hard"><b>The hard part:</b> generating questions whose answers you can verify without re-reading everything. Mine the transcripts for decisions that were later revisited — those are self-labelling.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — benchmark construction is the bulk of it</div>
+        <div><span class="k">First move</span>Extract 50 decisions from transcripts where a later session references an earlier one. That's your seed set.</div>
+        <div><span class="k">Why it matters</span>Everyone building agents needs this number and nobody has the data to produce it honestly</div>
+      </div>
+    </article>
+
+    <article class="idea ext low">
+      <span class="id">A7</span>
+      <h3>The cleanup nobody wants to do</h3>
+      <p class="sub">180 tutorial forks are drowning the signal.</p>
+      <div class="chips"><span class="chip">~180 repos ending in -tutorial</span></div>
+
+      <p>Cloning a strong repo and writing the documentation it lacked is an excellent way to learn a codebase, and you've done it about 180 times. But as a <em>portfolio</em>, they dilute: a visitor scrolling your profile sees mostly other people's projects with your notes attached, and has to dig to find <code>lbm-wind-tunnel</code> or <code>superoptimizer-foundry</code>.</p>
+
+      <p>Consolidate them under a single <code>tutorial-editions</code> index — one repo, one table, links out to each fork with a line on what it taught — and archive the originals. Archiving preserves everything and removes nothing; it just stops them competing for attention with your original work. Signal-to-noise on the profile roughly doubles for an afternoon of scripted work, and it pairs naturally with A1.</p>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-low">Low</span> — a script and an afternoon</div>
+        <div><span class="k">First move</span>Auto-generate the index table from the GitHub API, then archive in bulk via <code>gh repo archive</code></div>
+        <div><span class="k">Pairs with</span>A1 — do both in one sitting</div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section style="padding-top:44px">
+  <div class="wrap">
+    <h2 class="teal">Track B · new domains</h2>
+    <p class="sectitle">Nine territories you have never entered</p>
+    <p class="secnote">Chosen for maximum contrast with the existing 448. Each one requires a skill the portfolio does not currently demonstrate — and several of them cannot be faked, which is the point.</p>
+  </div>
+</section>
+
+<section id="track-b" style="border-bottom:none;padding-top:12px">
+  <div class="wrap">
+
+    <article class="idea new">
+      <span class="id">B1</span>
+      <h3>The physical world</h3>
+      <p class="sub">Highest contrast of anything on this page. Zero of 448 repos touch a sensor or a motor.</p>
+      <div class="chips"><span class="chip none">new domain: embedded / control</span><span class="chip">↔ f1-digital-twin</span><span class="chip">↔ evtol-studio</span><span class="chip">↔ mars-sample-return</span><span class="chip">↔ gyroscope-physics</span></div>
+
+      <p>You have built an entire shelf of simulated bodies — an F1 car with combined-slip tire models, a six-degree-of-freedom eVTOL, a Mars transfer planner, a gyroscope textbook. Not one of them ever had to be right about a real object. In simulation you write the physics; in hardware the physics writes you.</p>
+
+      <p><strong>The project: a hardware-in-the-loop tuning rig.</strong> An ESP32 or Pi Pico, an inertial measurement unit, and a PCA9685 driving a two-axis servo gimbal. An agent tunes a stabilization controller against the actual plant and must discover, from data alone, the errors no simulator volunteers:</p>
+
+      <ul class="tight">
+        <li>The microcontroller's clock <strong>drifts</strong>, so your 100 Hz loop isn't 100 Hz</li>
+        <li>The servo is <strong>nonlinear near its travel limits</strong> and has backlash in the gear train</li>
+        <li>The gyroscope has a <strong>bias that wanders with temperature</strong> — it reads rotation while sitting still</li>
+        <li>The PCA9685's internal oscillator runs a <strong>few percent fast</strong> out of the box, so requested pulse widths aren't delivered ones</li>
+      </ul>
+
+      <p>Every one of those needs a calibration constant that no amount of clean code replaces. That is the entire lesson, and it is the one lesson 448 software repos cannot teach.</p>
+
+      <div class="hard"><b>Why it's the strongest pick on the page:</b> reality is the grader. There is no way to write a convincing README about a gimbal that oscillates. Roughly $40 of parts, and it is the only project here an LLM cannot talk its way through.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-low">Low</span> in tokens — the bottleneck is parts shipping, not usage</div>
+        <div><span class="k">First move</span>Order the parts today. Pico + MPU-6050 + PCA9685 + two servos.</div>
+        <div><span class="k">Stretch</span>Let the agent run the tuning loop unattended overnight and log every calibration it discovers</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B2</span>
+      <h3>A storage engine, tested against a disk that lies</h3>
+      <p class="sub">Database internals: absent from all 448 repos, and exactly where generated code falls apart.</p>
+      <div class="chips"><span class="chip none">new domain: systems / storage</span></div>
+
+      <p>Write an <strong>LSM-tree key-value store</strong> in Rust — the write-optimized structure behind RocksDB, Cassandra and LevelDB, where writes land in memory, get flushed to sorted files, and are compacted in the background. Building the tree is a known quantity; that's not the ambitious part.</p>
+
+      <p>The ambitious part is the test harness: <strong>deterministic simulation testing</strong>, in the style FoundationDB pioneered and TigerBeetle refined. You replace the operating system with a simulation — a fake clock you control, and a fake disk that actively betrays you. It tears writes in half mid-flight. It silently ignores an <code>fsync</code> and then loses the data. It reorders operations that you assumed were sequential. Every run is driven from a random seed, so any crash you find replays <em>byte-identically</em> until you fix it.</p>
+
+      <p>Then layer on <strong>Jepsen-style consistency checking</strong>: record every operation, and afterwards verify that the history you observed could have been produced by some valid sequential execution. Not "did it crash" but "did it ever tell me something untrue."</p>
+
+      <div class="hard"><b>Why this domain specifically:</b> crash-consistency is where LLM-written code quietly falls apart, because the bugs only appear at the intersection of failure timing and buffering. Getting it right is therefore an unusually strong signal — and the seeded simulator is what makes it possible for one person to get right at all.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-high">High</span> — real systems work, no shortcuts</div>
+        <div><span class="k">First move</span>Build the lying-disk simulator <em>before</em> the storage engine. The order matters.</div>
+        <div><span class="k">Adjacent</span>Pairs naturally with B3 if you want a full systems arc</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B3</span>
+      <h3>Raft, specified in TLA+ and checked against the implementation</h3>
+      <p class="sub">Plenty of people implement Raft. Almost nobody closes the loop.</p>
+      <div class="chips"><span class="chip none">new domain: distributed systems / formal methods</span></div>
+
+      <p>Implement Raft consensus — the algorithm that lets a cluster of machines agree on a sequence of operations even when some of them crash or the network splits. Then write the <strong>TLA+ specification</strong> and run the TLC model checker over it, which exhaustively explores every interleaving of messages and failures up to a bounded size and proves that no reachable state violates your safety property.</p>
+
+      <p>Then the step that makes it rare: <strong>trace validation</strong>. Instrument your running Rust or Go implementation to emit a log of state transitions, and check that log against the spec — confirming the code actually <em>refines</em> the design it claims to implement. Most projects have a spec and code that drifted apart within a month; very few can demonstrate they didn't.</p>
+
+      <div class="hard"><b>The hard part:</b> TLA+ thinks in states and actions rather than in code, and the translation is genuinely a different mode of thought. That difficulty is the reason it's worth doing.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — the spec is small, the mental shift is not</div>
+        <div><span class="k">First move</span>Model-check a two-node leader election before writing a line of implementation</div>
+        <div><span class="k">Plays to</span>Your documentation strength — the write-up almost writes itself</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B4</span>
+      <h3>A zkSNARK from scratch, with the explainer to match</h3>
+      <p class="sub">Applied cryptography is a one-repo stub. This is your strongest format aimed at a genuine gap.</p>
+      <div class="chips"><span class="chip none">new domain: applied cryptography</span><span class="chip">post-quantum-cryptography</span><span class="chip">↔ rigorous-explainer</span></div>
+
+      <p>Build a small zero-knowledge proof system end to end — a way to convince someone that you know a solution without revealing it. The pipeline: express a computation as an <strong>arithmetic circuit</strong>, flatten it into <strong>R1CS</strong> (rank-1 constraint system, a set of multiplication constraints in matrix form), then produce and verify proofs with <strong>Groth16</strong> or a PLONK-style scheme. Along the way you implement elliptic-curve pairings — a bilinear map that lets a verifier check a polynomial identity without ever seeing the polynomial.</p>
+
+      <p>Then wrap it in the format you're demonstrably best at: a rigorous interactive explainer with every symbol defined before use, hand-drawn figures, and the derivation shown rather than asserted. There is a real shortage of material that goes all the way from "here is what a polynomial commitment is" to code that runs — most explanations stop at the metaphor, and most implementations assume you already understand the metaphor.</p>
+
+      <div class="hard"><b>The hard part:</b> the trusted setup and pairing arithmetic are unforgiving; an off-by-one in the field arithmetic produces proofs that verify for the wrong reason. Test against a reference implementation early.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — math-heavy but self-contained</div>
+        <div><span class="k">First move</span>Get a Schnorr proof of knowledge working first, then build up to circuits</div>
+        <div><span class="k">Best-fit skill</span>rigorous-explainer was built for precisely this shape of content</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B5</span>
+      <h3>Do protein language models actually know which mutations are dangerous?</h3>
+      <p class="sub">No biology anywhere in 448 repos. This one runs on a laptop.</p>
+      <div class="chips"><span class="chip none">new domain: computational biology</span><span class="chip">medical-report-analyzer</span><span class="chip">↔ autoresearch-llm-molecule-bench</span></div>
+
+      <p>Pull <strong>ClinVar</strong> — a curated public database of genetic variants annotated as disease-causing or benign — and <strong>gnomAD</strong>, which catalogues variation observed across large populations of ostensibly healthy people. Run <strong>ESM-2</strong>, a protein language model trained on evolutionary sequence data, and test whether its zero-shot likelihood ratio separates the two groups. The model never saw a disease label; it only learned what protein sequences evolution tends to produce. The claim is that "evolutionarily implausible" tracks "medically dangerous."</p>
+
+      <p>The published result says it largely works. Your contribution is the stress test, and it's where the interesting answer lives:</p>
+
+      <ul class="tight">
+        <li>Does it hold for <strong>rare variants</strong>, where the evidence is thinnest and clinical need is greatest?</li>
+        <li>Does it hold for proteins with <strong>shallow evolutionary alignments</strong> — few known relatives, so less signal to learn from?</li>
+        <li>How much of the apparent skill is just <strong>conservation</strong>, recoverable from a simple alignment score without any neural network at all?</li>
+      </ul>
+
+      <p>That last question is the one that matters and the one most papers under-answer. A clean negative — "the fancy model buys you less than you'd think over a 30-year-old baseline" — is genuinely publishable and a far better repo than a confirmation.</p>
+
+      <div class="hard"><b>The hard part:</b> label leakage. ClinVar annotations correlate with how well-studied a gene is, so a model can look skilled by tracking research attention rather than biology. Control for it explicitly.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — data wrangling dominates; a small ESM checkpoint fits a consumer GPU</div>
+        <div><span class="k">First move</span>Reproduce the headline separation on a single well-studied gene before scaling</div>
+        <div><span class="k">Honest outcome</span>The baseline comparison is the paper. Run it first, not last.</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B6</span>
+      <h3>Watch land change from orbit</h3>
+      <p class="sub">No geospatial work at all — and the imagery is free.</p>
+      <div class="chips"><span class="chip none">new domain: remote sensing / geospatial</span><span class="chip">terra-pulse</span></div>
+
+      <p>Sentinel-2 and Landsat archives are openly available through STAC APIs, which let you query decades of imagery by location and date without downloading a petabyte. Two framings, both real:</p>
+
+      <p><strong>Land-cover change detection</strong> over a region you care about — with honest handling of everything that breaks the naive version. Clouds and their shadows must be masked or they register as change. Seasonal phenology means a deciduous field genuinely "changes" every autumn without anything happening. And sensor calibration drifts across a multi-year archive, so raw pixel values from 2015 and 2025 are not directly comparable without radiometric correction.</p>
+
+      <p><strong>Or the civic version:</strong> urban heat islands from Landsat's thermal infrared bands, cross-referenced against tree canopy cover. Converting radiance to land-surface temperature requires emissivity estimation and atmospheric correction — real physics with a real answer — and the output is a map with actual weight in a planning conversation.</p>
+
+      <div class="hard"><b>The hard part:</b> the corrections <em>are</em> the project. Anyone can difference two images; almost nobody handles the three confounds above, which is exactly why most amateur change-detection maps are wrong.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — free data, moderate compute, real domain learning</div>
+        <div><span class="k">First move</span>Pull one cloud-free Sentinel-2 pair over a known construction site and see if you can detect it at all</div>
+        <div><span class="k">Zero overlap</span>Nothing in the portfolio touches this</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B7</span>
+      <h3>Stop explaining interpretability and do it</h3>
+      <p class="sub">Two explainers about the field. Zero artifacts in it.</p>
+      <div class="chips"><span class="chip none">new domain: mechanistic interpretability (hands-on)</span><span class="chip">the-J-space</span><span class="chip">jacobian-lens-lab</span><span class="chip">nanochat</span><span class="chip">nanochat-with-claude</span></div>
+
+      <p>You've written two well-made explainers about Anthropic's Jacobian-lens research and never trained an interpretability artifact yourself. Given how clearly this is the area you find most interesting, that gap is the loudest one in the portfolio.</p>
+
+      <p>Train a <strong>sparse autoencoder</strong> on a small open model — Pythia-160M or GPT-2 small, comfortably within a consumer GPU. The problem it solves: a single neuron in a language model typically fires for many unrelated things at once, because the model packs more concepts than it has dimensions. An SAE re-expresses those tangled activations in a much wider, mostly-zero basis, so each learned feature stands a chance of meaning one thing.</p>
+
+      <p>Then do the step most hobby SAE projects skip entirely: <strong>causal intervention</strong>. Pick a feature you think means something, ablate it, and show a specific predicted change in the model's behavior. That is the whole difference between "this feature correlates with X" and "this feature <em>causes</em> X" — and it is the difference between commentary and practice.</p>
+
+      <div class="hard"><b>The hard part:</b> resisting the pull of cherry-picked feature galleries. A dozen features with verified causal effects beats a thousand with suggestive names, and honest reporting of the ones that turned out to mean nothing is what makes it credible.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-low">Low</span> in tokens — the cost is GPU hours, not agent turns</div>
+        <div><span class="k">First move</span>Train on a single mid-layer residual stream and find one feature you can steer with</div>
+        <div><span class="k">Effect</span>Moves you from commentator to practitioner in the field you clearly care most about</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B8</span>
+      <h3>A language where units are types and conservation laws are checked</h3>
+      <p class="sub">You've hinted at this twice and never followed through.</p>
+      <div class="chips"><span class="chip none">new domain: language design / type theory</span><span class="chip">physics-type-checker</span><span class="chip">noether-symmetry-compiler</span><span class="chip">lambda-calculus-tutor</span></div>
+
+      <p>Two repos in your history gesture at this and stop short. Build the real thing: a small language with a genuine type checker where <strong>dimensional analysis is enforced by the type system</strong>. Adding meters to seconds is a compile error, not a lost Mars orbiter. Dividing a distance by a time yields a velocity <em>type</em>, derived automatically, not annotated by hand.</p>
+
+      <p>Then the part that makes it novel rather than merely nice: <strong>symmetry annotations on a Lagrangian</strong>, from which the corresponding conserved quantity falls out at compile time via Noether's theorem. Declare that your system is invariant under time translation, and the compiler tells you energy is conserved — and flags any expression in your simulation that violates it. Translation invariance gives momentum; rotational invariance gives angular momentum.</p>
+
+      <p>Nobody has shipped this well. Units-as-types exists in fragments across several languages; the Noether half exists in nobody's compiler. It sits precisely at the intersection of your physics fluency, your compiler curiosity, and your explainer craft.</p>
+
+      <div class="hard"><b>The hard part:</b> keeping the type system decidable once you allow rational exponents on dimensions. Constrain the ambition early or it becomes a research project.</div>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span> — a small language is a weekend; a good one is longer</div>
+        <div><span class="k">First move</span>Units-only first, checked on a projectile problem. Add Noether once that's solid.</div>
+        <div><span class="k">Originality</span>Highest on the page — genuinely nobody owns this</div>
+      </div>
+    </article>
+
+    <article class="idea new">
+      <span class="id">B9</span>
+      <h3>Real-time neural audio in the browser</h3>
+      <p class="sub">Three shallow audio repos. Go under the surface once.</p>
+      <div class="chips"><span class="chip none">new domain: real-time DSP</span><span class="chip">sonify</span><span class="chip">vox-forge</span><span class="chip">biometric-audio-synthesizer</span></div>
+
+      <p>Two directions, both hard in the right way. <strong>Differentiable DSP</strong> (DDSP) does timbre transfer by having a small neural network control classical synthesis primitives — harmonic oscillators and filtered noise — rather than generating waveform samples directly, which is why it can run in real time at all. Or <strong>physical modeling</strong>: waveguide and modal synthesis, where the sound emerges from simulating an actual vibrating object rather than from sampling one.</p>
+
+      <p>Run it live in a WebAudio worklet compiled to WASM, under the roughly three-millisecond budget an audio callback gives you before the user hears a click. That constraint is the whole exercise: no garbage collection, no allocation, no variance. Every frame, on time, forever.</p>
+
+      <p>Coupled-oscillator physics is home turf for you. Hard real-time is not — which is exactly why it belongs on this list.</p>
+
+      <div class="meta">
+        <div><span class="k">Cost</span><span class="cost-med">Medium</span></div>
+        <div><span class="k">First move</span>Get a Karplus–Strong plucked string running in a worklet with zero allocations. Measure the jitter.</div>
+        <div><span class="k">Bridge</span>Your physics work and your media work have never actually met — this is where</div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>The constraint</h2>
+    <p class="sectitle">25% of a week, resetting tomorrow at 8pm</p>
+    <p class="secnote">Sixteen ideas, one budget. This is how I'd spend it — and what I'd deliberately hold back for after the reset.</p>
+
+    <ol class="plan">
+      <li>
+        <b>Today — A1 and A7 together</b>
+        Graphify your own repos, then consolidate and archive the tutorial forks. Both are mostly scripted, both are cheap, and together they make the other fourteen ideas findable by anyone who looks. Do these regardless of what else you pick.
+      </li>
+      <li>
+        <b>Today — order B1's parts</b>
+        Roughly $40. The bottleneck on the hardware rig is shipping, not usage, so starting the clock costs nothing this week and unblocks next week entirely.
+      </li>
+      <li>
+        <b>Remainder of the week — B7</b>
+        The sparse autoencoder is the best fit for a constrained budget: the expense is GPU hours on your own machine, not agent turns. And it closes the most conspicuous gap in the portfolio.
+      </li>
+      <li>
+        <b>After the reset — A2, A3, or B2</b>
+        All three are long agent loops that will consume a full budget by themselves. The trading consolidation, the Lean formalization, and the storage engine are each a week's project on their own. Don't start one at 25%.
+      </li>
+    </ol>
+
+    <div class="callout" style="border-left-color:var(--teal);margin-top:34px">
+      <span class="lbl" style="color:var(--teal)">If you only take one thing from this page</span>
+      <p>The portfolio's weakness is not ambition or range — both are already unusual. It is that the strongest work is invisible and the physical world is entirely absent. <strong>A1 fixes the first for the cost of an afternoon. B1 fixes the second for the cost of a takeaway meal.</strong> Everything else on this page is optional by comparison.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Scanned 448 public repositories · full descriptions read for the 160 most recently updated · 4 August 2026
+  </div>
+</footer>
+
+<script>
+  const bar = document.getElementById('filters');
+  const cards = document.querySelectorAll('.idea');
+  bar.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const f = btn.dataset.f;
+    bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+    cards.forEach(c => {
+      const show = f === 'all'
+        || (f === 'a' && c.classList.contains('ext'))
+        || (f === 'b' && c.classList.contains('new'))
+        || (f === 'low' && c.classList.contains('low'));
+      c.classList.toggle('hide', !show);
+    });
+  });
+</script>
+
+</body>
+</html>

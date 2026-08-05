@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>az9713 portfolio — repo graph</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #16181c; overflow: hidden;
+               font: 13px/1.4 system-ui, sans-serif; color: #ddd; }
+  #graph { width: 100vw; height: 100vh; }
+  .panel { position: fixed; z-index: 10; background: rgba(22,24,28,.9);
+           border: 1px solid #3a3f47; border-radius: 8px; padding: 10px 12px; }
+  #ui { top: 10px; left: 10px; display: flex; flex-direction: column; gap: 8px; width: 250px; }
+  #ui input[type=text] { background: #23262b; border: 1px solid #555; color: #eee;
+        border-radius: 4px; padding: 5px 8px; width: 100%; box-sizing: border-box; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  #stats { color: #8b929c; font-size: 11px; }
+  button { background: #23262b; border: 1px solid #555; color: #eee;
+           border-radius: 4px; padding: 4px 8px; cursor: pointer; }
+  button:hover { background: #32363d; }
+  #hits { max-height: 170px; overflow-y: auto; font-size: 12px; }
+  #hits div { padding: 2px 4px; cursor: pointer; border-radius: 3px;
+              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #hits div:hover { background: #32363d; }
+  #legend { top: 10px; right: 10px; width: 260px; max-height: 92vh; overflow-y: auto; }
+  #legend .item { display: flex; align-items: center; gap: 7px; padding: 3px 4px;
+                  cursor: pointer; border-radius: 3px; font-size: 12px; }
+  #legend .item:hover { background: #32363d; }
+  #legend .item.off { opacity: .35; }
+  #legend .sw { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  #legend .n { color: #8b929c; margin-left: auto; font-size: 11px; }
+  #legend h3 { margin: 0 0 6px; font-size: 12px; color: #8b929c; font-weight: 600;
+               text-transform: uppercase; letter-spacing: .05em; }
+  #info { bottom: 10px; left: 10px; max-width: 380px; display: none; }
+  #info b { color: #fff; }
+  #info .meta { color: #8b929c; font-size: 12px; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div id="ui" class="panel">
+  <input id="search" type="text" placeholder="Search repos… (Enter = jump)">
+  <div id="hits"></div>
+  <div class="row">
+    <label class="row" style="gap:5px"><input id="orphans" type="checkbox" checked>orphans</label>
+    <button id="center" style="flex:1">Fit</button>
+  </div>
+  <label class="row" style="gap:5px"><input id="bygraph" type="checkbox">color by link community</label>
+  <div id="stats"></div>
+</div>
+<div id="legend" class="panel"><h3>Clusters — click to filter</h3><div id="legend-items"></div></div>
+<div id="info" class="panel"></div>
+<div id="graph"></div>
+<script>__LIB__</script>
+<script>
+const DATA = __DATA__;
+const color = c => `hsl(${(c * 137.508 + 20) % 360}, 65%, 62%)`;
+DATA.nodes.forEach(n => { n.col = color(n.c); n.r = 3 + 1.7 * Math.sqrt(n.s); });
+// topic colors are the default; the toggle recolors by the link graph's own Louvain
+// communities — the structure the layout is actually made of.
+const recolor = byGraph => DATA.nodes.forEach(n => n.col = color(byGraph ? n.g : n.c));
+const masterLinks = DATA.links.map(l => ({ source: l.s, target: l.t, sid: l.s, tid: l.t, w: l.w }));
+const off = new Set();               // hidden cluster ids
+let hoverNode = null, neighbors = new Map();
+
+const graph = new ForceGraph(document.getElementById('graph'))
+  .backgroundColor('#16181c')
+  .nodeId('id')
+  .nodeVal(n => n.r * n.r / 4)
+  .autoPauseRedraw(false)
+  .linkColor(l => hoverNode && (l.sid === hoverNode.id || l.tid === hoverNode.id)
+      ? '#e0b874' : 'rgba(255,255,255,0.055)')
+  .linkWidth(l => hoverNode && (l.sid === hoverNode.id || l.tid === hoverNode.id) ? 1.5 : 1)
+  .nodeCanvasObject((n, ctx, scale) => {
+    const dim = hoverNode && n !== hoverNode && !neighbors.get(hoverNode.id)?.has(n.id);
+    ctx.globalAlpha = dim ? 0.12 : 1;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, 2 * Math.PI);
+    ctx.fillStyle = n.col;
+    ctx.fill();
+    if (n.s > 0) { ctx.lineWidth = 0.7; ctx.strokeStyle = '#fff'; ctx.stroke(); }
+    // labels fade in on zoom (Obsidian-style); always on for hovered node + neighbors
+    if (!dim && (scale > 1.8 || hoverNode)) {
+      ctx.globalAlpha = Math.min(1, scale > 1.8 ? (scale - 1.8) / 1.2 + 0.4 : 1);
+      ctx.font = `${Math.max(3, 10 / scale)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#dfe3e8';
+      ctx.fillText(n.label, n.x, n.y + n.r + Math.max(4, 11 / scale));
+    }
+    ctx.globalAlpha = 1;
+  })
+  .nodePointerAreaPaint((n, col, ctx) => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r + 2, 0, 2 * Math.PI);
+    ctx.fillStyle = col;
+    ctx.fill();
+  })
+  .onNodeHover(n => { hoverNode = n || null; if (n) showInfo(n); })
+  .onBackgroundClick(() => { hoverNode = null; document.getElementById('info').style.display = 'none'; });
+
+// ponytail: repulsion vs. weighted springs — these three numbers are the whole layout.
+// The built-in centering force is enough; a custom gravity collapsed the graph to a point.
+graph.d3Force('charge').strength(-120).distanceMax(400);
+graph.d3Force('link').distance(25).strength(l => Math.min(1, l.w * 10));
+graph.cooldownTime(20000);
+
+const infoEl = document.getElementById('info');
+function showInfo(n) {
+  infoEl.style.display = 'block';
+  infoEl.innerHTML = `<b>${n.label}</b> <span style="color:${n.col}">● ${n.cn}</span>
+    <div class="meta">${n.s}★ · ${n.lang || 'no language'} · ${n.d} neighbor${n.d === 1 ? '' : 's'}</div>`;
+}
+
+function apply() {
+  const showOrphans = document.getElementById('orphans').checked;
+  const vis = new Set(DATA.nodes.filter(n => !off.has(n.c) && (showOrphans || n.d > 0)).map(n => n.id));
+  const fnodes = DATA.nodes.filter(n => vis.has(n.id));
+  const flinks = masterLinks.filter(l => vis.has(l.sid) && vis.has(l.tid));
+  neighbors = new Map();
+  flinks.forEach(l => {
+    (neighbors.get(l.sid) || neighbors.set(l.sid, new Set()).get(l.sid)).add(l.tid);
+    (neighbors.get(l.tid) || neighbors.set(l.tid, new Set()).get(l.tid)).add(l.sid);
+  });
+  graph.graphData({ nodes: fnodes, links: flinks });
+  document.getElementById('stats').textContent =
+    `${fnodes.length} repos · ${flinks.length.toLocaleString()} edges ` +
+    `(of ${DATA.nodes.length} / ${masterLinks.length.toLocaleString()})`;
+}
+
+const legendEl = document.getElementById('legend-items');
+DATA.clusters.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'item';
+  d.innerHTML = `<span class="sw" style="background:${color(c.id)}"></span>
+                 <span>${c.name}</span><span class="n">${c.size}</span>`;
+  d.onclick = () => {
+    off.has(c.id) ? off.delete(c.id) : off.add(c.id);
+    d.classList.toggle('off', off.has(c.id));
+    apply();
+  };
+  legendEl.appendChild(d);
+});
+
+const searchEl = document.getElementById('search'), hitsEl = document.getElementById('hits');
+searchEl.oninput = () => {
+  const q = searchEl.value.trim().toLowerCase();
+  hitsEl.innerHTML = '';
+  if (q.length < 2) return;
+  graph.graphData().nodes.filter(n => n.label.toLowerCase().includes(q)).slice(0, 30).forEach(n => {
+    const d = document.createElement('div');
+    d.textContent = n.label;
+    d.onclick = () => { graph.centerAt(n.x, n.y, 800); graph.zoom(4, 800); hoverNode = n; showInfo(n); };
+    hitsEl.appendChild(d);
+  });
+};
+searchEl.onkeydown = e => { if (e.key === 'Enter' && hitsEl.firstChild) hitsEl.firstChild.click(); };
+document.getElementById('orphans').onchange = apply;
+document.getElementById('bygraph').onchange = e => recolor(e.target.checked);
+// fit on the connected core; orphans are allowed to sit off-frame
+const fit = (ms) => graph.zoomToFit(ms, 60, n => n.d > 0);
+document.getElementById('center').onclick = () => { hoverNode = null; fit(600); };
+
+apply();
+[500, 3000, 8000, 15000].forEach(t => setTimeout(() => fit(600), t));
+</script>
+</body>
+</html>

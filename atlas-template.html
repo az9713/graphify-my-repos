@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas of 448 Repos — az9713</title>
+<style>
+  :root{
+    --bg:#0d0e11; --bg2:#141619; --bg3:#1b1e23; --line:#26292f; --fg:#e9e7e2; --dim:#9a9690;
+    --amber:#e0a458; --teal:#5fb3a8; --rose:#d17b7b; --violet:#9a8cc4;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#faf9f7; --bg2:#fff; --bg3:#f2efea; --line:#e2ddd5; --fg:#1a1917; --dim:#6b665e;
+           --amber:#a86e1f; --teal:#2f7d72; --rose:#a44f4f; --violet:#6a5b96; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  header{border-bottom:1px solid var(--line);padding:68px 0 40px}
+  .kicker{font:500 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:18px}
+  h1{font-size:clamp(32px,5.5vw,50px);line-height:1.06;letter-spacing:-.025em;margin:0 0 18px;font-weight:650}
+  h1 em{font-style:normal;color:var(--dim)}
+  .lede{font-size:18px;color:var(--dim);max-width:62ch;margin:0}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:32px}
+  .stat{background:var(--bg2);padding:14px 16px}
+  .stat b{display:block;font:600 24px/1.1 var(--mono);letter-spacing:-.02em}
+  .stat span{font-size:11.5px;color:var(--dim)}
+  section{padding:48px 0;border-bottom:1px solid var(--line)}
+  h2{font:600 12px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:0 0 10px}
+  h2.t{color:var(--teal)} h2.r{color:var(--rose)}
+  .sectitle{font-size:clamp(23px,3.6vw,30px);line-height:1.16;letter-spacing:-.02em;margin:0 0 14px;font-weight:620}
+  .secnote{color:var(--dim);max-width:64ch}
+  p{margin:0 0 15px} strong{font-weight:640}
+  code{font:13px/1 var(--mono);background:var(--bg2);border:1px solid var(--line);padding:2px 5px;border-radius:4px}
+  .callout{border-left:2px solid var(--rose);background:var(--bg2);padding:18px 22px;border-radius:0 8px 8px 0;margin:24px 0}
+  .callout.t{border-left-color:var(--teal)} .callout p:last-child{margin:0}
+  .callout .lbl{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--rose);display:block;margin-bottom:9px}
+  .callout.t .lbl{color:var(--teal)}
+
+  /* chart */
+  .chart{margin:26px 0 10px}
+  .row{display:grid;grid-template-columns:200px 1fr 60px;gap:12px;align-items:center;padding:5px 0;font-size:13.5px}
+  .row .nm{text-align:right;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row.vague .nm{opacity:.55;font-style:italic}
+  .bars{position:relative;height:22px}
+  .bar{position:absolute;top:0;height:10px;border-radius:2px;background:var(--violet);opacity:.75}
+  .bar.s{top:12px;height:10px;background:var(--amber);opacity:1}
+  .row .v{font:12px/1 var(--mono);color:var(--dim)}
+  .legend{display:flex;gap:18px;font-size:12px;color:var(--dim);margin:14px 0 0;padding-left:212px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:20px;height:8px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+  /* cluster cards */
+  .cards{display:grid;gap:14px;margin-top:24px}
+  details.cl{border:1px solid var(--line);border-radius:9px;background:var(--bg2);overflow:hidden}
+  details.cl[open]{background:var(--bg3)}
+  summary{padding:16px 20px;cursor:pointer;list-style:none;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:baseline}
+  summary::-webkit-details-marker{display:none}
+  summary:hover{background:var(--bg3)}
+  .cn{font-size:17px;font-weight:620;letter-spacing:-.01em}
+  .cn small{font-weight:400;color:var(--dim);font-size:13px;margin-left:8px}
+  .cmeta{font:12px/1 var(--mono);color:var(--dim);white-space:nowrap}
+  .cbody{padding:0 20px 20px;border-top:1px solid var(--line)}
+  .tterms{font:12px/1.7 var(--mono);color:var(--teal);margin:14px 0 12px;word-spacing:2px}
+  .mem{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+  .m{font:11.5px/1 var(--mono);border:1px solid var(--line);border-radius:4px;padding:5px 7px;color:var(--dim);background:var(--bg2)}
+  .m.st{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 40%,transparent)}
+  .m.orph{color:var(--rose);border-color:color-mix(in srgb,var(--rose) 35%,transparent)}
+  .vflag{display:inline-block;font:10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+    color:var(--rose);border:1px solid color-mix(in srgb,var(--rose) 40%,transparent);border-radius:3px;padding:3px 5px;margin-left:8px}
+  ul.tight{margin:0 0 14px;padding-left:20px} ul.tight li{margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:18px 0}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{font:600 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+  td.n{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+  footer{padding:40px 0 80px;color:var(--dim);font:13px/1.7 var(--mono)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="kicker">A1 executed · graphify + local topic model · 4 Aug 2026</div>
+  <h1>Atlas of 448 repositories.<br><em>The clusters, and what they cost to find.</em></h1>
+  <p class="lede">Every public repo under az9713, clustered by what it is actually about — then measured for reach, connection, and neglect. Two of the findings overturn what I told you earlier today.</p>
+  <div class="stats" id="stats"></div>
+</div></header>
+
+<section><div class="wrap">
+  <h2 class="r">Correction</h2>
+  <p class="sectitle">The claim I made this morning was wrong</p>
+  <p>I said your stars land on clones rather than original work. The data says otherwise: derivative repos average <strong>0.68★</strong>, originals <strong>0.54★</strong>. Both are effectively zero and the gap is noise. Four of the six repos above 10★ are original.</p>
+  <p>Clustering by subject shows what is actually happening, and it is a sharper problem than the one I described.</p>
+  <div class="callout">
+    <span class="lbl">The real pattern</span>
+    <p id="split"></p>
+  </div>
+  <p>Attention is not tracking originality, effort, or difficulty. It tracks <strong>subject</strong>. Work about agent tooling gets found; everything else does not, no matter how hard it was. <code>lbm-wind-tunnel</code> is not invisible because it is derivative — it isn't derivative. It is invisible because no one browsing GitHub for computational fluid dynamics will ever encounter it.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Reach by subject</h2>
+  <p class="sectitle">Fourteen clusters, sized against the attention they receive</p>
+  <p class="secnote">Violet is repo count, amber is total stars. Where the amber bar vanishes, an entire body of work is going unread.</p>
+  <div class="chart" id="chart"></div>
+  <div class="legend"><span><i style="background:var(--violet);opacity:.75"></i>repo count</span><span><i style="background:var(--amber)"></i>total stars</span><span>both bars share one scale (0&ndash;91)</span><span><i style="background:var(--rose);opacity:.5"></i>italic = generic terms, not a real subject</span></div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="t">The map</h2>
+  <p class="sectitle">What each cluster contains</p>
+  <p class="secnote">Terms are the words most distinctive to that cluster versus the rest of the corpus — machine-selected, not chosen by me. Amber repos have stars; red repos are orphans with one connection or none. Click to open.</p>
+  <div class="cards" id="cards"></div>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="r">Neglect</h2>
+  <p class="sectitle">Seventy-two orphans</p>
+  <p class="secnote">Repos connected to at most one other repo in the knowledge graph. Not necessarily weak work — several are among the most technically ambitious things you own. They simply sit outside every conversation, including your own.</p>
+  <div class="mem" id="orphans" style="margin-top:20px"></div>
+  <p style="margin-top:22px">Alongside these, a blunter discoverability fact: <strong id="topicfact"></strong> GitHub topics are the main way a repo reaches someone who was not already looking for it. Setting them across the portfolio is an afternoon of scripted work and would plausibly do more for reach than any single project on the suggestions page.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Structure</h2>
+  <p class="sectitle">Hubs and bridges</p>
+  <p class="secnote">Hubs share vocabulary with the most other repos. Bridges sit on the shortest path between otherwise separate clusters — they are where two of your interests actually met.</p>
+  <table id="hubs"></table>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="r">Method &amp; cost</h2>
+  <p class="sectitle">What the expensive step bought, and what it didn't</p>
+  <p>Graphify ran eighteen parallel subagents over the corpus and consumed <strong id="tok"></strong> input tokens. It produced a graph of 1,569 nodes and 2,868 edges across 544 extracted concepts.</p>
+  <p>The concepts turned out to be almost entirely <strong>tools and vendors</strong> — Claude Code, Python, TypeScript, Gemini, Codex, MCP, React. Not one of the top forty is a subject. And 331 of the 544 appear in exactly one repo, so they carry no clustering signal at all. Clustering that graph groups repos by <em>which tools they use</em>, and since nearly everything uses the same three, it produced 146 communities with a median size of 2 and fifty singletons. Useless as an atlas.</p>
+  <div class="callout">
+    <span class="lbl">Worth saying plainly</span>
+    <p>The subject clusters on this page did not come from the expensive step. They came from TF-IDF over the README text with the boilerplate stripped — scikit-learn, running locally, at zero token cost, in about two seconds.</p>
+    <p>My first pass at that also failed: four of fourteen clusters were grouping on README furniture (<code>docs/troubleshooting.md</code>, badge markup) and on the YAML front matter I had added myself. Stripping those fixed it. The lesson is not that graphify is bad — its tool graph is a genuinely useful second layer, and the hub and bridge numbers above come from it. The lesson is that it answered a different question than the one I asked.</p>
+  </div>
+  <p>Two clusters, holding <strong id="vaguen"></strong> repos between them, still have generic top terms rather than a subject. That is not a failure of the method. It is the finding: roughly a third of the portfolio is undifferentiated agent infrastructure, similar enough to itself that no algorithm can tell the pieces apart.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2 class="t">What this changes</h2>
+  <p class="sectitle">Revisions to the suggestions page</p>
+  <ul class="tight">
+    <li><strong>A1 is done</strong> — this page is the output. The atlas exists; the clusters were discovered rather than declared.</li>
+    <li><strong>A7 shrinks and changes shape.</strong> There are 120 derivative repos, not the ~180 I estimated, and archiving them is no longer the point — they are not what is suppressing your reach. Setting topics on all 448 is the cheap win I missed entirely.</li>
+    <li><strong>A new candidate outranks most of the list.</strong> Six clusters — physics, trading, film, courses, knowledge graphs, studio builds — hold <span id="starved"></span> repos and almost no readers. The bottleneck for that work is distribution, not more building.</li>
+    <li><strong>The trading cluster is 17 repos, not 13.</strong> A2's consolidation is slightly larger than scoped.</li>
+    <li><strong>Physics and math is 24 repos.</strong> Large enough that A5's merged CFD suite should probably be a merged <em>physics</em> suite.</li>
+  </ul>
+  <div class="callout t">
+    <span class="lbl">The one-line version</span>
+    <p>You do not have a quality problem or an ambition problem. You have <strong>fourteen subjects, one audience, and no index</strong> — and until today, 433 repos that GitHub had no way to categorise.</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  448 repos · 440 in graph · clusters from TF-IDF + KMeans (k=14, boilerplate stripped) · hubs and bridges from graphify's concept graph (1,569 nodes / 2,868 edges) · 4 August 2026
+</div></footer>
+
+<script>const DATA=/*__DATA__*/{};</script>
+<script>
+const S=DATA.summary, C=DATA.clusters, R=DATA.repos;
+const byName=Object.fromEntries(R.map(r=>[r.repo,r]));
+const orphanSet=new Set(R.filter(r=>r.neighbors<=1).map(r=>r.repo));
+const membersOf=id=>R.filter(r=>r.cluster===id).sort((a,b)=>b.stars-a.stars||b.neighbors-a.neighbors||a.repo.localeCompare(b.repo));
+
+document.getElementById('stats').innerHTML=[
+ [S.total,'repositories'],[C.length,'subject clusters'],[S.zero_star,'at zero stars'],
+ [S.orphan_count,'orphans'],[S.with_topics,'with topics set'],
+ [(S.extraction_tokens/1e6).toFixed(2)+'M','tokens to extract']
+].map(([b,s])=>`<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('');
+
+// tooling vs starved split
+const TOOL=['Claude Code Workflows & Hooks','Agent Runtime & Instrumentation','Mixed: Plugins, ML & Playbooks','Coding-Agent Harness Forks','Chat Bridges & Agent Memory','Documentation Packages'];
+const STARVED=['Physics & Math Explainers','Trading & Quant','AI Film & Media Pipelines','HTML Course & Lecture Builds','Knowledge Graphs & Vaults','Gemini Studio Deploys'];
+const sum=(names,k)=>C.filter(c=>names.includes(c.name)).reduce((a,c)=>a+c[k],0);
+const tR=sum(TOOL,'size'), tS=sum(TOOL,'stars'), sR=sum(STARVED,'size'), sS=sum(STARVED,'stars');
+document.getElementById('split').innerHTML=
+ `The six clusters about agent tooling hold <strong>${tR} repos and ${tS} stars</strong>. The six clusters about everything else — physics, trading, film, courses, knowledge graphs, deployed apps — hold <strong>${sR} repos and ${sS} stars</strong>. Near-identical output, <strong>${(tS/Math.max(sS,1)).toFixed(0)}× the attention.</strong>`;
+document.getElementById('starved').textContent=sR;
+document.getElementById('topicfact').textContent=`Only ${S.with_topics} of ${S.total} repos have GitHub topics set, and just ${S.with_homepage} have a homepage URL.`;
+document.getElementById('tok').textContent=S.extraction_tokens.toLocaleString();
+document.getElementById('vaguen').textContent=C.filter(c=>c.vague).reduce((a,c)=>a+c.size,0);
+
+// chart
+const M=Math.max(...C.map(c=>c.size),...C.map(c=>c.stars));  // one shared scale: mixed scales would misread
+const maxR=M, maxS=M;
+document.getElementById('chart').innerHTML=C.map(c=>`
+ <div class="row${c.vague?' vague':''}">
+  <div class="nm" title="${c.name}">${c.name}</div>
+  <div class="bars">
+   <div class="bar" style="width:${(c.size/maxR*100).toFixed(1)}%"></div>
+   <div class="bar s" style="width:${(c.stars/maxS*100).toFixed(1)}%"></div>
+  </div>
+  <div class="v">${c.size} · ${c.stars}★</div>
+ </div>`).join('');
+
+// cluster cards
+document.getElementById('cards').innerHTML=C.map(c=>`
+ <details class="cl">
+  <summary>
+   <div><span class="cn">${c.name}<small>${c.size} repos · ${c.stars} stars · ${c.derivative} derivative</small></span>${c.vague?'<span class="vflag">generic terms</span>':''}</div>
+   <span class="cmeta">median ${c.median_neighbors} links</span>
+  </summary>
+  <div class="cbody">
+   <div class="tterms">${c.terms.join('  ·  ')}</div>
+   <div class="mem">${membersOf(c.id).map(r=>{
+     const cls=r.stars>0?'m st':(r.neighbors<=1?'m orph':'m');
+     return `<span class="${cls}" title="${(r.desc||'').replace(/"/g,'&quot;')}">${r.repo}${r.stars>0?' '+r.stars+'★':''}</span>`;
+   }).join('')}</div>
+  </div>
+ </details>`).join('');
+
+// orphans
+document.getElementById('orphans').innerHTML=R.filter(r=>r.neighbors<=1)
+ .sort((a,b)=>b.kb-a.kb)
+ .map(r=>`<span class="m orph" title="${(r.desc||'').replace(/"/g,'&quot;')} — ${r.cluster_name}">${r.repo}</span>`).join('');
+
+// hubs + bridges
+document.getElementById('hubs').innerHTML=
+ '<tr><th>Hub</th><th>Links</th><th>Bridge</th><th>Betweenness</th></tr>'+
+ DATA.hubs.slice(0,12).map((h,i)=>{const b=DATA.bridges[i];
+  return `<tr><td>${h.repo}</td><td class="n">${h.neighbors}</td><td>${b.repo}</td><td class="n">${b.betweenness.toFixed(4)}</td></tr>`}).join('');
+</script>
+</body>
+</html>

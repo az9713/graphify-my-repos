@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Development Journey — Portfolio Atlas &amp; Repo Graph</title>
+<style>
+  :root {
+    --bg: #16181c; --panel: #1c1f24; --line: #2f343b; --ink: #dfe3e8;
+    --dim: #98a0aa; --accent: #e0b874; --good: #7fd18c; --bad: #ef7f7f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 0 0 6px; }
+  h2 { font-size: 21px; margin: 52px 0 12px; padding-bottom: 8px;
+       border-bottom: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 26px 0 6px; color: var(--accent); }
+  .sub { color: var(--dim); margin: 0 0 8px; }
+  .chapter { color: var(--dim); font-size: 12px; letter-spacing: .1em;
+             text-transform: uppercase; margin: 52px 0 -38px; }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .88em;
+        background: #23262b; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+  pre { background: #23262b; border: 1px solid var(--line); border-radius: 8px;
+        padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px;
+           border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 600; text-transform: uppercase;
+       font-size: 11.5px; letter-spacing: .06em; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  blockquote { margin: 16px 0; padding: 12px 16px; background: var(--panel);
+               border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; }
+  blockquote p { margin: 0 0 6px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+          padding: 14px 16px; margin: 16px 0; }
+  .card h3 { margin-top: 0; }
+  .sym { color: var(--bad); font-weight: 600; }
+  .fix { color: var(--good); font-weight: 600; }
+  ol li, ul li { margin: 6px 0; }
+  .meta { color: var(--dim); font-size: 13.5px; }
+  .tag { display: inline-block; background: #23262b; border: 1px solid var(--line);
+         border-radius: 999px; padding: 1px 9px; font-size: 12px; color: var(--dim); }
+  hr { border: none; border-top: 1px solid var(--line); margin: 40px 0; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #fbfaf8; --panel: #f2f0ec; --line: #ddd8d0; --ink: #23262b;
+            --dim: #6b7280; --accent: #9a6b17; --good: #1f7a3d; --bad: #b3261e; }
+    code, kbd, pre { background: #efece6; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Development Journey — Portfolio Atlas &amp; Repo Graph</h1>
+<p class="sub">From "suggest me some ambitious projects" to a clustered atlas of 448 repositories and
+an Obsidian-style physics graph. Two sessions, four deliverables, several wrong turns worth
+recording. <span class="tag">no git repo</span> <span class="tag">files on disk are the record</span></p>
+
+<h2>The opening ask</h2>
+
+<blockquote>
+<p>"i have 25% weekly usage left. it will be reset tomorrow 8pm. please scan my GitHub repos.
+suggests some ambitious projects that</p>
+<p>1. extend and/or fix existing ones<br>
+2. create new projects in domains that i have not attempted before.</p>
+<p>consider this is the chance for you to show off your vast knowledge, imagination and creativity.
+There are no limits on the topics except the stated usage. please suggestions only. no
+implementation yet."</p>
+</blockquote>
+
+<p>Two constraints shaped everything that followed. <strong>A hard token budget with a deadline</strong>
+— which made every expensive step a decision rather than a reflex. And <strong>"suggestions only"</strong>
+— the deliverable was judgement about a body of work, not code. To have judgement worth anything, the
+work had to be read first.</p>
+
+<p class="meta">The four follow-up prompts across both sessions, in order: <em>"please output a html for
+these suggestions"</em> → <em>"run A1 now — graphify all 448 repos"</em> → <em>"Do we have a graph"</em>
+→ (new session, after a handoff) <em>"create the graph… I have a recent project that also created an
+Obsidian-like graph based on physics. look it up how it was done and use the same skill here."</em>
+Everything below hangs off those five sentences.</p>
+
+<p class="chapter">Chapter 1</p>
+<h2>Reading 448 repositories</h2>
+
+<p>The first move was mechanical: pull every repository on the account through the GitHub API, then
+pull each README. That produced the corpus that every later step reads from:</p>
+
+<div class="wrap">
+<table>
+<tr><th>Artifact</th><th>What it is</th></tr>
+<tr><td><code>corpus/repos_raw.json</code></td><td>Unfiltered API response for all 448 repositories (~2.4 MB)</td></tr>
+<tr><td><code>corpus/repos.json</code></td><td>Trimmed metadata: name, description, language, stars, forks, created/updated, topics, fork flag, size</td></tr>
+<tr><td><code>corpus/docs/*.md</code></td><td>448 markdown files, one per repository: YAML front matter plus README truncated to 20k characters</td></tr>
+</table>
+</div>
+
+<p>One repository's README came back empty and stayed empty — noted rather than patched, because a
+missing README is itself a fact about the portfolio.</p>
+
+<div class="card">
+<h3>Problem: the API output crashed the reader</h3>
+<p><span class="sym">Symptom:</span> reading the GitHub API output in Python died on certain
+repository descriptions.</p>
+<p><span class="fix">Cause and fix:</span> Windows defaults to a legacy code page; repository
+descriptions contain emoji and non-Latin characters. Every read of API output is pinned to
+<code>encoding='utf-8'</code>. Small, but it recurred often enough to be worth writing down.</p>
+</div>
+
+<p class="chapter">Chapter 2</p>
+<h2>The suggestions page</h2>
+
+<p>With 448 READMEs read, the first deliverable was a single self-contained HTML page:
+<strong>16 project suggestions across two tracks</strong> — Track A extends seven existing
+repositories, Track B opens nine domains the portfolio has never touched. Each idea carries a cost
+rating (in the same budget currency the user was worried about), a concrete first move, and an
+explicit "the hard part" section so no idea reads as free. Filter chips at the top; no external
+assets.</p>
+
+<p>Design decision: <strong>cost as a first-class field.</strong> The opening prompt named a budget,
+so every suggestion states what it would spend. A suggestions page that ignores the stated constraint
+is a wish list, not advice.</p>
+
+<p>That page later turned out to contain two claims the data disproved. That story is Chapter 5 — and
+it is the most useful thing in this document.</p>
+
+<p class="chapter">Chapter 3</p>
+<h2>"run A1 now — graphify all 448 repos"</h2>
+
+<p>Suggestion A1 was to build a knowledge graph over the whole portfolio and see what the account is
+actually <em>about</em>. The user green-lit it. This was the single most expensive step of the
+project:</p>
+
+<div class="wrap">
+<table>
+<tr><th>Measure</th><th class="num">Value</th></tr>
+<tr><td>Input tokens consumed by extraction</td><td class="num">3,366,498</td></tr>
+<tr><td>Parallel extraction subagents</td><td class="num">18</td></tr>
+<tr><td>Files processed</td><td class="num">446</td></tr>
+<tr><td>Graph produced</td><td class="num">1,569 nodes / 2,868 edges</td></tr>
+<tr><td>Concepts extracted</td><td class="num">544</td></tr>
+<tr><td>…of which appear in exactly one document</td><td class="num">331</td></tr>
+<tr><td>Fine-grained communities detected</td><td class="num">146 (median size 2)</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>Problem: 3.4M tokens bought a vendor graph, not a subject graph</h3>
+<p><span class="sym">Symptom:</span> every one of the top 40 concepts by degree was a technology —
+the coding-agent CLI itself (264 edges), Python (126), TypeScript (86), then model names, protocols,
+frameworks. Clustering that graph groups repositories by <em>which tools they use</em>. In a portfolio
+that shares one stack, that collapses: 146 communities, median size 2, 50 singletons. Useless as a map.</p>
+<p><span class="fix">Cause:</span> LLM concept extraction surfaces named entities, and in technical
+writing the named entities are dependencies. Subject matter lives in the prose, not in the proper
+nouns.</p>
+<p><span class="fix">Fix:</span> split the job by what each method is actually good at.
+<strong>TF-IDF + SVD + KMeans locally</strong> for "what is this about" — seconds, zero tokens.
+<strong>The extracted graph</strong> kept for what it genuinely encodes: shared-tooling structure,
+and therefore hubs, bridges and orphans.</p>
+</div>
+
+<p class="chapter">Chapter 4</p>
+<h2>Two clusterings, two failures, two fixes</h2>
+
+<h3>Failure 1 — clustering on README furniture</h3>
+<p>The first TF-IDF pass produced fourteen clusters, four of which were junk: they grouped documents
+by installation instructions, badge markup and table-of-contents boilerplate. The vectorizer was
+reading the scaffolding, not the content — including the YAML front matter that the corpus builder had
+added itself.</p>
+
+<p>The rewrite strips aggressively before vectorizing, in this order:</p>
+<pre><code>strip YAML front matter      # self-inflicted: added during corpus build
+strip fenced code blocks
+strip HTML / badge markup
+strip markdown links and images, and bare URLs
+strip file-path tokens       # docs/troubleshooting.md and friends
+strip table and rule chrome
+then: drop any term containing a word from a ~90-word boilerplate stop list
+      (install, quickstart, prerequisites, npm, the tool and model names, …)</code></pre>
+
+<p>Then TF-IDF with bigrams (<code>max_df=0.30</code>, <code>min_df=5</code>, sublinear term
+frequency) → SVD to 120 dimensions → row-normalise → KMeans at k=14. The failed script was kept on
+disk, explicitly labelled as the broken version, because a record of <em>how</em> it failed is worth
+more than a clean directory.</p>
+
+<div class="card">
+<h3>Calibration note: silhouette ≈ 0.04 is not a verdict</h3>
+<p>Every k from 10 to 18 scored near 0.04. For text embeddings that is normal and is <em>not</em>
+evidence of "no structure" — clusters overlap by construction. The usable test is whether the top
+terms per cluster are interpretable by a human. They were, so k=14 was chosen and each cluster was
+hand-named from its terms and exemplars.</p>
+</div>
+
+<h3>Failure 2 — the hairball</h3>
+<p>The second clustering runs on the extracted graph, projected repo-to-repo. Done naively, one
+universal concept creates a clique of hundreds of repositories and the whole graph fuses into a
+single blob. The projection rule that fixed it:</p>
+
+<pre><code>drop any concept appearing in more than 120 repositories   # universal → carries no signal
+weight each shared concept by 1 / (k - 1)                  # Newman weighting; k = repos sharing it
+prune edges with weight <= 0.02                            # cuts what survives into something modular
+</code></pre>
+
+<p>Louvain resolution was then swept from 0.3 to 1.5 and the first setting landing in the 8–16
+communities range was taken — a deliberately boring selection rule, chosen in advance so the number of
+communities is not tuned to taste. Betweenness centrality was sampled (180 pivots) rather than
+computed exactly; exactness is not needed to rank bridges.</p>
+
+<h3>The merge</h3>
+<p>A third script joins the three sources into one record per repository — subject cluster and
+cluster name from the text clustering, tooling community, neighbour count and betweenness from the
+graph, stars/language/dates/topics/homepage from the API — and derives the summary statistics,
+the orphan list, the top 15 hubs and the top 15 bridges. Three clusters whose top terms are generic
+are flagged <code>vague</code> in the data itself rather than quietly presented as subjects.</p>
+
+<p>"Derivative" is a heuristic, and worth stating plainly: a repository counts as derivative if the
+API marks it a fork, or if its name or description contains <em>clone of</em>, <em>fork of</em>,
+<em>port of</em> or <em>tutorial</em>. It will miss an unmarked reimplementation.</p>
+
+<p class="chapter">Chapter 5</p>
+<h2>The atlas — and the corrections that overturned the suggestions</h2>
+
+<p><code>atlas.html</code> presents all 448 repositories: a reach chart, expandable cards for each of
+the 14 clusters listing every member, the orphan list, and a hub/bridge table. Data is injected into a
+template at build time through a <code>/*__DATA__*/</code> placeholder — the template is the file to
+edit; the generated page is overwritten on every rebuild.</p>
+
+<p>The point of building it was not the page. It was that the numbers contradicted the advice given
+one chapter earlier:</p>
+
+<div class="wrap">
+<table>
+<tr><th>Claim in the suggestions page</th><th>What the data showed</th></tr>
+<tr><td>Original work earns more attention than derivative work</td>
+    <td><strong>False.</strong> Derivative repositories average 0.68★, originals 0.54★ — indistinguishable noise. Stars track <em>subject</em>, not originality: six agent-tooling clusters hold 268 repositories and 244 stars; the six covering physics, trading, film, courses, knowledge graphs and deployed apps hold 113 repositories and <strong>11 stars</strong>.</td></tr>
+<tr><td>Discoverability was treated as a content problem</td>
+    <td><strong>Missed the cheapest fix.</strong> Only <strong>15 of 448</strong> repositories have GitHub topics set; only 37 have a homepage URL. That is a metadata fix, not a content fix, and it was absent from the original advice.</td></tr>
+<tr><td>"Roughly 180 derivative repositories"</td><td>120.</td></tr>
+<tr><td>Trading cluster ≈ 13 repositories</td><td>17 — which changes the scope of the suggestion built on it.</td></tr>
+<tr><td>A CFD-specific suggestion</td><td>The physics and math cluster is 24 repositories and much broader than CFD; the suggestion should widen.</td></tr>
+<tr><td>—</td><td><strong>147 repositories sit in two clusters whose top terms are generic.</strong> Roughly a third of the portfolio is agent infrastructure too self-similar to separate.</td></tr>
+</table>
+</div>
+
+<p>Design decision: <strong>publish the corrections, do not silently patch the earlier page.</strong>
+The suggestions page still carries its two disproven claims, with the atlas holding the corrections
+and the handoff note recording which is authoritative. Overwriting would have erased the more
+interesting artifact — the record that reading the data changed the conclusion.</p>
+
+<div class="card">
+<h3>Problem: three sections of the atlas rendered blank and the file looked perfect</h3>
+<p><span class="sym">Symptom:</span> the page validated, the server returned 200, the source read
+correctly — and the cluster cards, orphan list and hub table were all empty.</p>
+<p><span class="fix">Cause:</span> one missing field on one object threw inside a template literal
+during rendering, which abandoned every DOM assignment after it. The browser console showed no page
+error at all — only an unrelated browser-extension exception.</p>
+<p><span class="fix">Fix, now standing practice:</span> screenshot every section of a JavaScript-rendered
+page before calling it done. Two mechanics that cost time: <code>file://</code> URLs are refused by the
+browser tooling, so pages are served from a local HTTP server on a loopback address; and a screenshot
+taken immediately after a scroll sometimes returns a blank frame, so a section is never declared broken
+on a single capture.</p>
+</div>
+
+<h3>Interlude: the handoff</h3>
+<p>This directory is deliberately <strong>not a git repository</strong>, so there are no commits to
+resume from. Before the context was cleared, a <code>HANDOFF.md</code> was written to carry the state:
+what exists, what was disproven, where to read each artifact, the exact run order of the scripts, the
+gotchas that had cost time, and one clearly-specified next task. The next session started from that
+file — and the graph chapter below is that task being executed.</p>
+
+<p class="chapter">Chapter 6</p>
+<h2>The graph</h2>
+
+<blockquote><p>"create the graph. i have a recent project that also created an Obsidian-like graph
+based on physics. can you look it up how it was done and use the same skill here"</p></blockquote>
+
+<p>The second instruction mattered more than the first: it turned an open design task into a port. One
+content search across the projects directory for force-simulation vocabulary
+(<code>forceSimulation</code>, <code>repulsion</code>, <code>force-directed</code>,
+<code>barnes-hut</code>) returned 25 files, two of which were the earlier project — a brainstorm note
+and, next to it, a finished build: a Python slimming script, a vendored physics library, an HTML
+template, the generated viewer.</p>
+
+<div class="card">
+<h3>The inherited insight: "drag-lag" is not a feature, it is physics</h3>
+<p>The Obsidian behaviour people actually want — grab a node, its neighbours trail after it with a
+springy delay — is not implemented by anyone. It falls out of any <em>live</em> force simulation: links
+are springs, nodes repel, velocity is damped. Pin the dragged node to the cursor, keep the simulation
+running, and velocity decay <em>is</em> the lag. So the library question reduces to: whose drag handler
+keeps the simulation alive? The earlier note had already answered it — <strong>force-graph</strong>
+(Canvas 2D, d3-force inside) re-heats on drag by default. Not re-litigated here: sigma.js needs manual
+glue, vis-network will not scale, Cosmograph has the wrong interaction model, raw d3-force is what
+force-graph already is.</p>
+</div>
+
+<h3>What was rebuilt rather than reused</h3>
+<ul>
+<li><strong>The edge list did not exist.</strong> The clustering script emits community assignments and
+centrality but never wrote the edges, so the build script recomputes the projection from scratch using
+the identical rule (drop &gt;120, weight <code>1/(k-1)</code>, prune ≤0.02) — 7,581 edges over the
+repositories that survive the join.</li>
+<li><strong>Top-6 ties per repository.</strong> The full projection lays out as one uniform ball: every
+node pulled in every direction averages to no direction. Capping each node at its six strongest edges
+(union, so nothing is orphaned by the cap) cuts it to <strong>1,551 edges</strong> and lets structure
+appear.</li>
+<li><strong>Size by stars, not degree.</strong> Degree here is an artifact of the projection; stars are
+the outcome worth seeing. Radius is <code>3 + 1.7·√stars</code>, with a thin white ring on anything
+above zero — with 363 of 448 repositories at zero stars, size alone would be invisible.</li>
+<li><strong>Fit frames the connected core only.</strong> Disconnected repositories drift into a wide
+halo; fitting the whole extent shrinks the interesting part to a smudge. The fit call takes a node
+filter, so it frames nodes with at least one neighbour and lets the orphans sit off-frame — which is
+also exactly the "orphans at the margin" the brief asked for, obtained by not fighting the physics.</li>
+</ul>
+
+<div class="card">
+<h3>Problem: the hairball that was not a hairball</h3>
+<p><span class="sym">Symptom:</span> the first render was a perfectly even disc of dots — no clumping,
+no gaps, crisp circular boundary. It read as "this data has no structure".</p>
+<p><span class="fix">Cause:</span> it was not a layout. It was d3-force's <em>initial</em> phyllotaxis
+seeding pattern, which happens to be an even disc. The simulation had never run. Tell-tale: node 0 sat
+at exactly (7.07, 0), and screenshots stayed pixel-identical across completely different force settings.</p>
+</div>
+
+<div class="card">
+<h3>Problem: why the simulation never ran</h3>
+<p><span class="sym">Symptom:</span> zero ticks. Re-heating did nothing. Re-setting the graph data did
+nothing.</p>
+<p><span class="fix">Cause:</span> the automated browser tab reported
+<code>document.visibilityState === "hidden"</code> — the window was behind other windows. Chrome
+throttles <code>requestAnimationFrame</code> to zero in hidden tabs, and the library drives its physics
+from that loop. Screenshots still captured fine, which is what made the frozen image convincing rather
+than obviously broken.</p>
+<p><span class="fix">Fix:</span> verify through a channel whose page is genuinely visible. Standing
+guard for any animated page: log <code>document.visibilityState</code> and compare two node positions
+1.5 s apart before believing a screenshot of anything that moves.</p>
+</div>
+
+<div class="card">
+<h3>Problem: a hand-rolled gravity force collapsed the graph to a point</h3>
+<p><span class="sym">Symptom:</span> after adding a four-line custom force to pull disconnected nodes
+back toward the centre, every node sat at exactly (0, 0).</p>
+<p><span class="fix">Fix:</span> delete it. The built-in centering force already does the job, and the
+orphans settle into a natural halo — connected repositories inside roughly 670 units, disconnected ones
+at a median radius of about 808. The requested behaviour came from removing code, not adding it.</p>
+</div>
+
+<div class="card">
+<h3>Problem: tuning physics against a stopped simulation</h3>
+<p><span class="sym">Symptom:</span> several rounds of force-parameter changes appeared to do nothing.</p>
+<p><span class="fix">Cause:</span> two compounding traps — the hidden-tab freeze above, and the fact
+that once a simulation has cooled, live parameter edits do not restart it. Every apparent "no effect"
+was really "no ticks".</p>
+<p><span class="fix">Fix:</span> tune in a visible page, re-seed positions and re-heat explicitly
+between experiments, then bake the winning numbers into the template. Final values: charge −120 with a
+400-unit cutoff, link distance 25, link strength <code>min(1, weight × 10)</code>, 20 s cooldown.</p>
+</div>
+
+<h2>What the graph actually said</h2>
+
+<p>Once the physics ran, the honest answer to "do the subject clusters separate in space?" was
+<strong>no</strong>. Measured in the running page: only <strong>15.7%</strong> of connected
+repositories sit closer to their own cluster's centroid than to any other — against
+<strong>7.1%</strong> expected by chance across 14 clusters. Barely twice random.</p>
+
+<p>That could mean the links carry no structure, or that they carry a <em>different</em> structure. One
+toggle distinguishes them: recolour the same layout by the communities detected in the link graph
+itself. That number is <strong>35.0%</strong> across 11 communities (chance ≈ 9%), and the bands are
+visible in the picture.</p>
+
+<p>So the concept links do encode real grouping — it is simply not the topic grouping. The two views
+were derived from different evidence, text versus extracted concepts, and they disagree about how the
+portfolio divides. Both colourings ship, because the disagreement <em>is</em> the finding. It is also
+the same lesson as Chapter 3, arriving a second time by a different route: the extracted graph
+describes tooling, and tooling is not subject.</p>
+
+<h2>Tech stack and data lineage</h2>
+
+<div class="wrap">
+<table>
+<tr><th>Stage</th><th>Tooling</th><th>Output</th></tr>
+<tr><td>Corpus build</td><td>GitHub API, Python standard library (UTF-8 pinned)</td><td>448 metadata records + 448 markdown documents</td></tr>
+<tr><td>Concept extraction</td><td>LLM extraction over the corpus, 18 parallel subagents</td><td>Node-link graph: 1,569 nodes / 2,868 edges / 544 concepts</td></tr>
+<tr><td>Subject clustering</td><td>scikit-learn: TF-IDF → TruncatedSVD(120) → KMeans(14)</td><td>14 named subject clusters + per-repo assignment</td></tr>
+<tr><td>Structural clustering</td><td>NetworkX: Newman-weighted projection → Louvain (swept resolution) → sampled betweenness</td><td>11 link communities, degree, betweenness</td></tr>
+<tr><td>Merge</td><td>Python standard library</td><td>One record per repository + summary, orphans, hubs, bridges</td></tr>
+<tr><td>Atlas page</td><td>HTML template with a data placeholder, injected at build time</td><td>Self-contained report page</td></tr>
+<tr><td>Graph page</td><td>force-graph (Canvas 2D + d3-force), vendored and inlined</td><td>Self-contained viewer, ~340 KB</td></tr>
+</table>
+</div>
+
+<p>No npm, no bundler, no framework, no service. Every deliverable is a single double-clickable HTML
+file; every build step is a plain Python script that can be re-run in order.</p>
+
+<h2>Numbers, and what each one counts</h2>
+
+<div class="wrap">
+<table>
+<tr><th>Figure</th><th class="num">Value</th><th>Meaning — read this before quoting it</th></tr>
+<tr><td>Repositories</td><td class="num">448</td><td>Everything on the account</td></tr>
+<tr><td>Present in the extracted graph</td><td class="num">440</td><td>The rest produced no extractable content</td></tr>
+<tr><td>Rendered in the graph view</td><td class="num">440</td><td>Five in-graph nodes lack a merged record and are dropped by the build; the count is printed on every build so the gap is never silent</td></tr>
+<tr><td>Projection edges</td><td class="num">7,581</td><td>Before per-node pruning. An earlier count of 7,872 was taken over a slightly larger node set — same rule, different join.</td></tr>
+<tr><td>Edges drawn</td><td class="num">1,551</td><td>After keeping each repository's six strongest ties</td></tr>
+<tr><td>Orphans, atlas definition</td><td class="num">72</td><td>One neighbour or fewer in the unpruned projection</td></tr>
+<tr><td>Orphans, graph-view definition</td><td class="num">57</td><td>Zero edges after pruning. Different question, different number — both are correct.</td></tr>
+<tr><td>Zero-star repositories</td><td class="num">363</td><td>Of 448</td></tr>
+<tr><td>Extraction cost</td><td class="num">3,366,498</td><td>Input tokens, one run</td></tr>
+</table>
+</div>
+
+<h2>Decisions I would defend, and one I would revisit</h2>
+
+<ul>
+<li><strong>Splitting "what is it about" from "what does it use".</strong> The whole project turns on
+this. Text clustering answers the first; the extracted graph answers the second. Forcing either to
+answer both produces confident nonsense.</li>
+<li><strong>Selection rules chosen before seeing results.</strong> "First Louvain resolution landing in
+8–16 communities", "smallest cutoff under the node budget", "k=14 judged by interpretable terms" —
+picked in advance so the output is not tuned to flatter.</li>
+<li><strong>Keeping the failed clustering script on disk, labelled.</strong> It documents a failure mode
+that would otherwise be rediscovered.</li>
+<li><strong>Shipping the disagreement rather than the prettier view.</strong> Both colourings, both
+numbers, in the page and in this document.</li>
+<li><strong>Verification by observed effect, never by clean exit.</strong> Screenshots for rendered
+pages, measured node positions for physics, printed counts for every build.</li>
+<li><strong>Would revisit:</strong> the 3.4M-token extraction. It bought genuine hub/bridge/orphan
+structure and a second opinion that turned out to be informative — but for the question that was
+actually asked, a local pass on the same corpus would have answered it in seconds for nothing. Budget
+first, extract second.</li>
+</ul>
+
+<h2>Things worth knowing before touching any of it</h2>
+
+<ol>
+<li><strong>Generated pages are never edited directly.</strong> Both HTML deliverables are built by
+injecting data into a template. Edits go to the template or the build script, then rebuild; direct
+edits are overwritten.</li>
+<li><strong>Every page embeds a snapshot.</strong> Regenerate the corpus or the merged data and both
+pages are stale until rebuilt.</li>
+<li><strong>The projection rule is duplicated</strong> across the clustering script and the graph build
+script. Change one, change both, or the picture and the clusters stop describing the same graph.</li>
+<li><strong>Both graph colourings reuse one palette function.</strong> Cluster 3 and community 3 are the
+same hue and mean different things; the legend always describes subject clusters.</li>
+<li><strong>Embedded JSON and the inlined library both escape <code>&lt;/</code>.</strong> Without it a
+repository name containing a closing script tag would truncate the page — the classic single-file HTML
+foot-gun.</li>
+<li><strong>The graph tab burns CPU while open</strong> (hover highlighting requires continuous redraw)
+and <strong>re-runs the layout on every load</strong> — positions from dragging are not saved.</li>
+<li><strong>Search sees only visible nodes.</strong> Cluster filters and the orphan toggle change what
+is findable.</li>
+<li><strong>"Derivative" is a name-and-description heuristic</strong>, not a provenance check.</li>
+<li><strong>There is no git history.</strong> The files on disk and the handoff note are the entire
+record — which is why both are written as if for a stranger.</li>
+</ol>
+
+<h2>File inventory</h2>
+
+<div class="wrap">
+<table>
+<tr><th>File</th><th>Role</th><th>Safe to delete?</th></tr>
+<tr><td><code>HANDOFF.md</code></td><td>Durable state: what exists, what was disproven, run order, gotchas, next task</td><td>No</td></tr>
+<tr><td><code>portfolio-suggestions.html</code></td><td>16 suggestions, two tracks (carries two disproven claims — see Chapter 5)</td><td>No</td></tr>
+<tr><td><code>atlas.html</code></td><td>Clustered report over all 448 repositories (generated)</td><td>Yes — rebuild from template</td></tr>
+<tr><td><code>atlas-template.html</code></td><td>Source of truth for the atlas page</td><td>No</td></tr>
+<tr><td><code>graph.html</code></td><td>Obsidian-style force graph (generated)</td><td>Yes — rebuild</td></tr>
+<tr><td><code>graph-template.html</code></td><td>Source of truth for the graph UI and physics</td><td>No</td></tr>
+<tr><td><code>build_graph.py</code></td><td>Projection, pruning, injection</td><td>No</td></tr>
+<tr><td><code>force-graph.min.js</code></td><td>Vendored rendering + physics library</td><td>No (build input)</td></tr>
+<tr><td><code>recluster.py</code></td><td>Newman projection, Louvain sweep, centrality</td><td>No</td></tr>
+<tr><td><code>topics2.py</code></td><td>Working subject clustering</td><td>No</td></tr>
+<tr><td><code>topics.py</code></td><td>The broken first attempt, kept as a record</td><td>Yes, if the lesson is remembered</td></tr>
+<tr><td><code>merge.py</code></td><td>Joins all three sources into the per-repo record</td><td>No</td></tr>
+<tr><td><code>atlas-data.json</code>, <code>topics.json</code></td><td>Merged data and cluster assignments</td><td>No (build inputs)</td></tr>
+<tr><td>Corpus and graph-export folders</td><td>448 metadata records, 448 documents, extracted graph, communities</td><td>No — regenerating costs the 3.4M tokens again</td></tr>
+<tr><td><code>graph-topics.jpeg</code>, <code>graph-linkcommunity.jpeg</code></td><td>Verification screenshots of both colour modes</td><td>Yes</td></tr>
+<tr><td>This document</td><td>Development journey</td><td>Reference</td></tr>
+</table>
+</div>
+
+<hr>
+
+<p class="meta">Verification standard used throughout: nothing here was concluded from a clean exit
+code. Layout claims were measured in the running page — node positions, cluster-centroid hit rates,
+core and halo radii. Page claims were screenshotted from a page confirmed to be visible. Corpus claims
+were recomputed from the merged data rather than recalled.</p>
+
+</main>
+</body>
+</html>
